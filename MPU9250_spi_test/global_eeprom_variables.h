@@ -13,9 +13,9 @@ float axCal = 0.00;
 float ayCal = 0.00;
 float azCal = 0.00;
 
-float axOff = 0.15544973333333273;
-float ayOff = 0.302868866666667;
-float azOff = -0.02610953333331878;
+float axOff = 0.00;
+float ayOff = 0.00;
+float azOff = 0.00;
 
 float acc_vect[3];
 ////////////////////////////////////////////////////
@@ -32,9 +32,9 @@ float gxCal = 0.00;
 float gyCal = 0.00;
 float gzCal = 0.00;
 
-float gxOff = -0.0005500000000000001;
-float gyOff = -0.05275;
-float gzOff = 0.01865;
+float gxOff = 0.00;
+float gyOff = 0.00;
+float gzOff = 0.00;
 ////////////////////////////////////////////////////
 
 
@@ -50,13 +50,9 @@ float mxCal = 0.00;
 float myCal = 0.00;
 float mzCal = 0.00;
 
-float A_mat[3][3] = {
-  {0.03124515, -0.00061432, 0.0007664},
-  {-0.00061432, 0.0375395, -0.00094489},
-  {0.0007664, -0.00094489, 0.02960192}
-};
+float A_mat[3][3];
 
-float b_vect[3] = {15.01861878, 35.19811548, -44.43469638};
+float b_vect[3];
 
 float mag_vect[3];
 ////////////////////////////////////////////////////
@@ -79,8 +75,8 @@ float kSampleTime = (float)kSampleTime_ms/1000.00;
 
 
 float roll_est = 0.0, roll_uncertainty = 100.0;
-float roll_rate_variance = 5.078905600000001e-07;
-float roll_angle_variance = 6.410608640000001e-06;
+float roll_rate_variance = 0.00;
+float roll_angle_variance = 0.00;
 
 void rollKalmanFilter1D(float roll_rate_measurement, float roll_angle_measurement){
   //prediction
@@ -95,8 +91,8 @@ void rollKalmanFilter1D(float roll_rate_measurement, float roll_angle_measuremen
 
 
 float pitch_est = 0.0, pitch_uncertainty = 100.0; 
-float pitch_rate_variance = 7.51696e-07;
-float pitch_angle_variance = 6.329787639999999e-06;
+float pitch_rate_variance = 0.00;
+float pitch_angle_variance = 0.00;
 
 void pitchKalmanFilter1D(float pitch_rate_measurement, float pitch_angle_measurement){
   //prediction
@@ -110,9 +106,9 @@ void pitchKalmanFilter1D(float pitch_rate_measurement, float pitch_angle_measure
 }
 
 
-float yaw_est = 0.0, yaw_uncertainty = 100.0;
-float yaw_rate_variance = 9.06364e-07;
-float yaw_angle_variance = 0.00077800094156;
+float yaw_est = 0.0, yaw_uncertainty = 10000.0;
+float yaw_rate_variance = 0.00;
+float yaw_angle_variance = 0.00;
 
 void yawKalmanFilter1D(float yaw_rate_measurement, float yaw_angle_measurement){
   //prediction

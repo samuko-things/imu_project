@@ -13,8 +13,11 @@
 #include "mpu9250.h"
 
 
-/* Mpu9250 object, SPI bus, CS on pin 10 */
-bfs::Mpu9250 imu(&SPI, 10);
+// /* Mpu9250 object, SPI bus, CS on pin 10 */
+// bfs::Mpu9250 imu(&SPI, 10);
+
+/* Mpu9250 object */
+bfs::Mpu9250 imu;
 
 unsigned long serialCommTime, serialCommSampleTime = 10;  // ms -> (1000/sampleTime) hz
 unsigned long readImuTime, readImuSampleTime = 5; // ms -> (1000/sampleTime) hz
@@ -26,6 +29,10 @@ void setup() {
   Serial.begin(115200);
   Serial.setTimeout(2);
 
+  // update global params with eeprom contents
+  updateGlobalParamsFromEERPOM();
+  /////////////////////////////////////////////
+
   delay(500);
 
   initLed();
@@ -35,29 +42,47 @@ void setup() {
   delay(1000);
   offLed();
 
-  while (!Serial) {
-  }
 
+  //---------------- START IMU IN SPI MODE -----------------------//
   /* Start the SPI bus */
-  SPI.begin();
+  // SPI.begin();
+  //----------------------------------------------------------------//
+  
+
+
+  //---------------- START IMU IN I2C MODE -----------------------//
+   /* Start the I2C bus */
+  Wire.begin();
+  Wire.setClock(400000);
+  /* I2C bus,  0x68 address */
+  imu.Config(&Wire, bfs::Mpu9250::I2C_ADDR_PRIM);
+  //----------------------------------------------------------------//
+
+
+
+  //---------------- INITIALIZE IMU -----------------------//
   /* Initialize and configure IMU */
   if (!imu.Begin()) {
-    // Serial.println("Error initializing communication with IMU");
+    Serial.println("Error initializing communication with IMU");
     while (1) {
     }
   }
 
   /* Set the sample rate divider */
   if (!imu.ConfigSrd(19)) {
-    // Serial.println("Error configured SRD");
+    Serial.println("Error configured SRD");
     while (1) {
     }
   }
+  //----------------------------------------------------------------//
+
+
 
   serialCommTime = millis();
   readImuTime = millis();
   kTime_ms = millis();
   printTime_ms = millis();
+  
 }
 
 

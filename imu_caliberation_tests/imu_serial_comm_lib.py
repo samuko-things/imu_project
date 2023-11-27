@@ -22,19 +22,21 @@ class IMUSerialComm:
     return data
 
   
-  # def send(self, cmd_route, valA=0, valB=0):
-  #   cmd_str = cmd_route+","+str(valA)+","+str(valB)
-  #   data = self.send_msg(cmd_str)
-  #   if data == "1":
-  #     return True
-  #   else:
-  #     return False
+  def send(self, cmd_route, val=0):
+    cmd_str = cmd_route+","+str(val)
+    data = self.send_msg(cmd_str)
+    if data == "1":
+      return True
+    else:
+      return False
   
   
   def get(self, cmd_route):
     data = self.send_msg(cmd_route).split(',')
     # return float(data[0]), float(data[1]), float(data[2])
-    if len(data)==3:
+    if len(data)==1:
+      return float(data[0])
+    elif len(data)==3:
       return float(data[0]), float(data[1]), float(data[2])
     elif len(data)==4:
       return float(data[0]), float(data[1]), float(data[2]), float(data[3])
