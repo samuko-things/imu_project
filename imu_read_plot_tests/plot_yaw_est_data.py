@@ -39,7 +39,8 @@ def animate(i):
 
 
 
-portName = '/dev/ttyACM0'
+# portName = '/dev/ttyACM0'
+portName = '/dev/ttyUSB0'
 imuSer = IMUSerialComm(portName, 115200, 0.1)
 time.sleep(5)
 

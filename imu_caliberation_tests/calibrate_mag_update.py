@@ -169,13 +169,13 @@ def readCalData():
     The sample in uT, [x,y,z] (corrected if performed calibration).
     '''
 
-    mxCal, myCal, mzCal = imuSer.get("mag-cal")
-    return mxCal, myCal, mzCal
+    mx, my, mz = imuSer.get("mag-raw")
+    s = np.array([mx,my,mz]).reshape(3, 1)
+    s = np.dot(A_1, s - b)
+    return s[0,0], s[1,0], s[2,0] #mxCal, myCal, mzCal
 
-    # mx, my, mz = imuSer.get("mag-raw")
-    # s = np.array([mx,my,mz]).reshape(3, 1)
-    # s = np.dot(A_1, s - b)
-    # return s[0,0], s[1,0], s[2,0] #mxCal, myCal, mzCal
+    # mxCal, myCal, mzCal = imuSer.get("mag-cal")
+    # return mxCal, myCal, mzCal
 
 
 
