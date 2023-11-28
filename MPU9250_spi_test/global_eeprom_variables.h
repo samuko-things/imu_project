@@ -70,8 +70,8 @@ float northCorrect[3];
 
 
 //////////////////////////////////////////////////////////////////////
-unsigned long kSampleTime_ms = 10, kTime_ms;
-float kSampleTime = (float)kSampleTime_ms/1000.00;
+unsigned long kSampleTime_us = 100000, kTime_us;
+float kSampleTime = (float)kSampleTime_us/1000000.00;
 
 
 float roll_est = 0.0, roll_uncertainty = 100.0;
@@ -127,6 +127,112 @@ void yawKalmanFilter1D(float yaw_rate_measurement, float yaw_angle_measurement){
 ////////////////////////////////////////////////////////////////////////////
 float qw, qx, qy, qz;
 ////////////////////////////////////////////////////////////////////////////
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+int wait_count = 0;
+
+
+
+float new_yaw_deg=0.0, old_yaw_deg=0.0, inc_yaw_deg=0.0, init_inc_yaw_deg;
+bool set_yaw_inc = false, start_yaw_inc = false;
+
+void increment_yaw_angle(float yaw_deg) {
+  new_yaw_deg = yaw_deg;
+  if ((new_yaw_deg - old_yaw_deg) > 180) {
+    inc_yaw_deg -= ((new_yaw_deg - old_yaw_deg) - 360);
+  }
+  else if ((new_yaw_deg - old_yaw_deg) < (-1 * 180)) {
+    inc_yaw_deg -= ((new_yaw_deg - old_yaw_deg) + 360);
+  }
+  else {
+    inc_yaw_deg += (new_yaw_deg - old_yaw_deg);
+  }
+  old_yaw_deg = new_yaw_deg;
+}
+
+void compute_yaw_increment(float yaw_deg) {
+  if (!set_yaw_inc) {
+    inc_yaw_deg = init_inc_yaw_deg;
+    set_yaw_inc = true;
+  }
+
+  if (!start_yaw_inc) {
+    old_yaw_deg = yaw_deg;
+    start_yaw_inc = true;
+  }
+
+  increment_yaw_angle(yaw_deg);
+}
+
+
+
+float new_pitch_deg=0.0, old_pitch_deg=0.0, inc_pitch_deg=0.0, init_inc_pitch_deg;
+bool set_pitch_inc = false, start_pitch_inc = false;
+
+void increment_pitch_angle(float pitch_deg) {
+  new_pitch_deg = pitch_deg;
+  if ((new_pitch_deg - old_pitch_deg) > 180) {
+    inc_pitch_deg -= ((new_pitch_deg - old_pitch_deg) - 360);
+  }
+  else if ((new_pitch_deg - old_pitch_deg) < (-1 * 180)) {
+    inc_pitch_deg -= ((new_pitch_deg - old_pitch_deg) + 360);
+  }
+  else {
+    inc_pitch_deg += (new_pitch_deg - old_pitch_deg);
+  }
+  old_pitch_deg = new_pitch_deg;
+}
+
+void compute_pitch_increment(float pitch_deg) {
+  if (!set_pitch_inc) {
+    inc_pitch_deg = init_inc_pitch_deg;
+    set_pitch_inc = true;
+  }
+
+  if (!start_pitch_inc) {
+    old_pitch_deg = pitch_deg;
+    start_pitch_inc = true;
+  }
+
+  increment_pitch_angle(pitch_deg);
+}
+
+
+
+
+float new_roll_deg=0.0, old_roll_deg=0.0, inc_roll_deg=0.0, init_inc_roll_deg;
+bool set_roll_inc = false, start_roll_inc = false;
+
+void increment_roll_angle(float roll_deg) {
+  new_roll_deg = roll_deg;
+  if ((new_roll_deg - old_roll_deg) > 180) {
+    inc_roll_deg -= ((new_roll_deg - old_roll_deg) - 360);
+  }
+  else if ((new_roll_deg - old_roll_deg) < (-1 * 180)) {
+    inc_roll_deg -= ((new_roll_deg - old_roll_deg) + 360);
+  }
+  else {
+    inc_roll_deg += (new_roll_deg - old_roll_deg);
+  }
+  old_roll_deg = new_roll_deg;
+}
+
+void compute_roll_increment(float roll_deg) {
+  if (!set_roll_inc) {
+    inc_roll_deg = init_inc_roll_deg;
+    set_roll_inc = true;
+  }
+
+  if (!start_roll_inc) {
+    old_roll_deg = roll_deg;
+    start_roll_inc = true;
+  }
+
+  increment_roll_angle(roll_deg);
+}
 
 #endif
 

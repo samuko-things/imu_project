@@ -80,7 +80,7 @@ void setup() {
 
   serialCommTime = millis();
   readImuTime = millis();
-  kTime_ms = millis();
+  kTime_us = micros();
   printTime_ms = millis();
   
 }
@@ -201,85 +201,98 @@ void loop() {
       //-------------------------------------------------------------------------------------//
 
 
+      if (wait_count > 50){
+        //-----------------------//
+        roll_deg = 1.00 * roll_deg;
+        pitch_deg = -1.00 * pitch_deg;
+        yaw_deg = -1.00 * yaw_deg;
+        //-----------------------//
+
+        init_inc_yaw_deg = yaw_deg;
+        compute_yaw_increment(yaw_deg);
+
+        init_inc_pitch_deg = pitch_deg;
+        compute_pitch_increment(pitch_deg);
+
+        init_inc_roll_deg = roll_deg;
+        compute_roll_increment(roll_deg);
+
+        //-----------------------//
+        roll = roll_deg * PI / 180.0;
+        pitch = pitch_deg * PI / 180.0;
+        yaw = inc_yaw_deg * PI / 180.0;
+        //-----------------------//
 
 
-
-      //-----------------------//
-      roll_deg = 1.00 * roll_deg;
-      pitch_deg = -1.00 * pitch_deg;
-      yaw_deg = -1.00 * yaw_deg;
-      //-----------------------//
-
-
-      //-----------------------//
-      roll = roll_deg * PI / 180.0;
-      pitch = pitch_deg * PI / 180.0;
-      yaw = yaw_deg * PI / 180.0;
-      //-----------------------//
-
-
-      //-----------------------//
-      roll_rate = 1.00 * gxCal;
-      pitch_rate = -1.00 * gyCal;
-      yaw_rate = -1.00 * gzCal;
-      //-----------------------//
+        //-----------------------//
+        roll_rate = 1.00 * gxCal;
+        pitch_rate = -1.00 * gyCal;
+        yaw_rate = -1.00 * gzCal;
+        //-----------------------//
+      }
+      else {
+        wait_count += 1;
+      }
 
     }
 
     readImuTime = millis();
   }
 
-  if ((millis() - kTime_ms) >= kSampleTime_ms) {
+  if ((micros() - kTime_us) >= kSampleTime_us) {
 
-    //-------- APPLY 1D KALMAN FILTER TO ROLL, PITCH AND YAW ------------//
-    rollKalmanFilter1D(roll_rate, roll);
-    pitchKalmanFilter1D(pitch_rate, pitch);
-    yawKalmanFilter1D(yaw_rate, yaw);
-    //--------------------------------------------------------------------//
+    if (wait_count > 50){
+        //-------- APPLY 1D KALMAN FILTER TO ROLL, PITCH AND YAW ------------//
+        rollKalmanFilter1D(roll_rate, roll);
+        pitchKalmanFilter1D(pitch_rate, pitch);
+        yawKalmanFilter1D(yaw_rate, yaw);
+        //--------------------------------------------------------------------//
 
 
-    //------- CONVERT FILTERED RPY TO QUATERNIONS -----------------------//
-    qx = ( sin(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
-    qy = ( cos(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) );
-    qz = ( cos(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) ) - ( sin(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) );
-    qw = ( cos(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
-    // -------------------------------------------------------------------//
+        //------- CONVERT FILTERED RPY TO QUATERNIONS -----------------------//
+        qx = ( sin(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
+        qy = ( cos(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) );
+        qz = ( cos(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) ) - ( sin(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) );
+        qw = ( cos(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
+        // -------------------------------------------------------------------//
 
-    kTime_ms = millis();
+      }
+
+    kTime_us = micros();
   }
 
   // if ((millis() - printTime_ms) >= printSampleTime_ms) {
-  //   //--------------------------------------------//
-  //     // Serial.print("roll_deg = ");
-  //     // Serial.println(roll_deg, 1);
-  //     // Serial.print("pitch_deg = ");
-  //     // Serial.println(pitch_deg, 1);
-  //     // Serial.print("yaw_deg = ");
-  //     // Serial.println(yaw_deg, 1);
+    //--------------------------------------------//
+      // Serial.print("roll_deg = ");
+      // Serial.println(roll_deg, 1);
+      // Serial.print("pitch_deg = ");
+      // Serial.println(pitch_deg, 1);
+      // Serial.print("yaw_deg = ");
+      // Serial.println(inc_yaw_deg, 1);
 
-  //     // Serial.print("roll_rad = ");
-  //     // Serial.println(roll, 4);
-  //     // Serial.print("pitch_rad = ");
-  //     // Serial.println(pitch, 4);
-  //     // Serial.print("yaw_rad = ");
-  //     // Serial.println(yaw, 4);
+      // Serial.print("roll_rad = ");
+      // Serial.println(roll, 4);
+      // Serial.print("pitch_rad = ");
+      // Serial.println(pitch, 4);
+      // Serial.print("yaw_rad = ");
+      // Serial.println(yaw, 4);
 
-  //     // Serial.print("roll_rate = ");
-  //     // Serial.println(roll_rate, 4);
-  //     // Serial.print("pitch_rate = ");
-  //     // Serial.println(pitch_rate, 4);
-  //     // Serial.print("yaw_rate = ");
-  //     // Serial.println(yaw_rate, 4);
+      // Serial.print("roll_rate = ");
+      // Serial.println(roll_rate, 4);
+      // Serial.print("pitch_rate = ");
+      // Serial.println(pitch_rate, 4);
+      // Serial.print("yaw_rate = ");
+      // Serial.println(yaw_rate, 4);
 
-  //     // Serial.print("roll_est = ");
-  //     // Serial.println(roll_est, 4);
-  //     // Serial.print("pitch_est = ");
-  //     // Serial.println(pitch_est, 4);
-  //     // Serial.print("yaw_est = ");
-  //     // Serial.println(yaw_est, 4);
+      // Serial.print("roll_est = ");
+      // Serial.println(roll_est, 4);
+      // Serial.print("pitch_est = ");
+      // Serial.println(pitch_est, 4);
+      // Serial.print("yaw_est = ");
+      // Serial.println(yaw_est, 4);
 
-  //     // Serial.println();
-  //     //--------------------------------------------//
+      // Serial.println();
+      //--------------------------------------------//
 
   //   printTime_ms = millis();
   // }
