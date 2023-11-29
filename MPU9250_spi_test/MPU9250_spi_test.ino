@@ -13,6 +13,17 @@
 #include "mpu9250.h"
 
 
+void lpfInit(){
+  linAccxFilter.setOrder(order);
+  linAccxFilter.setCutOffFreq(cutOffFreq);
+
+  linAccyFilter.setOrder(order);
+  linAccyFilter.setCutOffFreq(cutOffFreq);
+
+  linAcczFilter.setOrder(order);
+  linAcczFilter.setCutOffFreq(cutOffFreq);
+}
+
 // /* Mpu9250 object, SPI bus, CS on pin 10 */
 // bfs::Mpu9250 imu(&SPI, 10);
 
@@ -20,7 +31,7 @@
 bfs::Mpu9250 imu;
 
 unsigned long serialCommTime, serialCommSampleTime = 10;  // ms -> (1000/sampleTime) hz
-unsigned long readImuTime, readImuSampleTime = 5; // ms -> (1000/sampleTime) hz
+unsigned long readImuTime, readImuSampleTime = 2; // ms -> (1000/sampleTime) hz
 unsigned long printTime_ms, printSampleTime_ms = 20; // ms -> (1000/sampleTime) hz
 
 
@@ -76,13 +87,13 @@ void setup() {
   }
   //----------------------------------------------------------------//
 
-
+  lpfInit();
 
   serialCommTime = millis();
   readImuTime = millis();
   kTime_ms = millis();
   printTime_ms = millis();
-  
+
 }
 
 
@@ -175,33 +186,10 @@ void loop() {
       vectOp.cross(east, down, mag_vect_norm);
       vectOp.cross(north, east, down);
 
-      float cr = cos(radians(roll_deg)), sr = sin(radians(roll_deg));
-      float cp = cos(radians(pitch_deg)), sp = sin(radians(pitch_deg));
-
-      float Rroll[3][3] = {
-        {1, 0, 0},
-        {0, cr, (-1 * sr)},
-        {0, sr, cr},
-      };
-
-      float Rpitch[3][3] = {
-        {cp, 0, sp},
-        {0, 1, 0},
-        {(-1 * sp), 0, cp},
-      };
-
-      float n_vect[3];
-
-      vectOp.transform(n_vect, Rroll, north);
-      vectOp.transform(northCorrect, Rpitch, n_vect);
-
       // yaw angle will be between -180 to 0 to +180
-      yaw_deg = atan2(-1 * northCorrect[1], northCorrect[0]) * 180.0 / PI;
+      yaw_deg = atan2(-1 * north[1], north[0]) * 180.0 / PI;
 
       //-------------------------------------------------------------------------------------//
-
-
-
 
 
       //-----------------------//
@@ -245,10 +233,66 @@ void loop() {
     qw = ( cos(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
     // -------------------------------------------------------------------//
 
+    //generate Rotational Matrix
+
+    R_mat[0][0] = cos(pitch_est)*cos(yaw_est); // cθcψ
+    R_mat[0][1] = cos(pitch_est)*sin(yaw_est); // cθsψ
+    R_mat[0][2] = -1*sin(pitch_est); // −sθ
+
+    R_mat[1][0] = (sin(roll_est)*sin(pitch_est)*cos(yaw_est))-(cos(roll_est)*sin(yaw_est)); // sϕsθcψ–cϕsψ
+    R_mat[1][1] = (sin(roll_est)*sin(pitch_est)*sin(yaw_est))+(cos(roll_est)*cos(yaw_est)); // sϕsθsψ+cϕcψ
+    R_mat[1][2] = cos(pitch_est)*sin(roll_est); // cθsϕ;
+
+    R_mat[2][0] = (cos(roll_est)*sin(pitch_est)*cos(yaw_est))+(sin(roll_est)*sin(yaw_est)); // cϕsθcψ+sϕsψ;
+    R_mat[2][1] = (cos(roll_est)*sin(pitch_est)*sin(yaw_est))-(sin(roll_est)*cos(yaw_est)); // cϕsθsψ–sϕcψ
+    R_mat[2][2] = cos(pitch_est)*cos(roll_est); // cθcϕ
+
+    // compute linear acceleration
+    vectOp.transform(lin_acc_vect, R_mat, acc_gravity_vect);
+    vectOp.subtract(lin_acc_vect, acc_vect, lin_acc_vect);
+
+    lin_acc_x = lin_acc_vect[0];
+    lin_acc_y = lin_acc_vect[1];
+    lin_acc_z = lin_acc_vect[2];
+
+    // linAccxKalmanFilter1D(lin_acc_x);
+    // linAccyKalmanFilter1D(lin_acc_y);
+    // linAcczKalmanFilter1D(lin_acc_z);
+
+    lin_acc_x_est = linAccxFilter.filt(lin_acc_x);
+    lin_acc_y_est = linAccyFilter.filt(lin_acc_y);
+    lin_acc_z_est = linAcczFilter.filt(lin_acc_z);
+
     kTime_ms = millis();
   }
+}
 
-  // if ((millis() - printTime_ms) >= printSampleTime_ms) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// if ((millis() - printTime_ms) >= printSampleTime_ms) {
   //   //--------------------------------------------//
   //     // Serial.print("roll_deg = ");
   //     // Serial.println(roll_deg, 1);
@@ -283,7 +327,6 @@ void loop() {
 
   //   printTime_ms = millis();
   // }
-}
 
 
 

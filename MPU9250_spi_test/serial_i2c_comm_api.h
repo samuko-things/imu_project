@@ -142,6 +142,25 @@ String sendQuternions(){
   data += String(qz, 4);
   return data;
 }
+
+
+String sendLinearAccelerationRaw(){
+  String data = String(lin_acc_x, 4);
+  data += ",";
+  data += String(lin_acc_y, 4);
+  data += ",";
+  data += String(lin_acc_z, 4);
+  return data;
+}
+
+String sendLinearAccelerationEst(){
+  String data = String(lin_acc_x_est, 4);
+  data += ",";
+  data += String(lin_acc_y_est, 4);
+  data += ",";
+  data += String(lin_acc_z_est, 4);
+  return data;
+}
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -545,6 +564,18 @@ void serialReceiveAndSendData() {
 
       else if(serDataBuffer[0] == "quat"){
         ser_msg = sendQuternions();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if(serDataBuffer[0] == "alin-raw"){
+        ser_msg = sendLinearAccelerationRaw();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if(serDataBuffer[0] == "alin-est"){
+        ser_msg = sendLinearAccelerationEst();
         Serial.println(ser_msg);
         ser_msg = "";
       }
