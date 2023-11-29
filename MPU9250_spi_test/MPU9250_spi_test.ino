@@ -80,8 +80,12 @@ void setup() {
 
   serialCommTime = millis();
   readImuTime = millis();
-  kTime_ms = millis();
   printTime_ms = millis();
+
+  kTime_us = micros();
+  rollLastTime = micros();
+  pitchLastTime = micros();
+  yawLastTime = micros();
   
 }
 
@@ -227,11 +231,6 @@ void loop() {
 
     }
 
-    readImuTime = millis();
-  }
-
-  if ((millis() - kTime_ms) >= kSampleTime_ms) {
-
     //-------- APPLY 1D KALMAN FILTER TO ROLL, PITCH AND YAW ------------//
     rollKalmanFilter(roll_rate, roll);
     pitchKalmanFilter(pitch_rate, pitch);
@@ -245,7 +244,25 @@ void loop() {
     qw = ( cos(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
     // -------------------------------------------------------------------//
 
-    kTime_ms = millis();
+    readImuTime = millis();
   }
+
+  // if ((millis() - kTime_us) >= kSampleTime_us) {
+
+  //   //-------- APPLY 1D KALMAN FILTER TO ROLL, PITCH AND YAW ------------//
+  //   rollKalmanFilter(roll_rate, roll);
+  //   pitchKalmanFilter(pitch_rate, pitch);
+  //   yawKalmanFilter(yaw_rate, yaw);
+  //   //--------------------------------------------------------------------//
+
+  //   //------- CONVERT FILTERED RPY TO QUATERNIONS -----------------------//
+  //   qx = ( sin(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
+  //   qy = ( cos(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) );
+  //   qz = ( cos(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) ) - ( sin(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) );
+  //   qw = ( cos(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
+  //   // -------------------------------------------------------------------//
+
+  //   kTime_us = micros();
+  // }
 
 }

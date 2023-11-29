@@ -10,7 +10,7 @@ def animate(i):
     global imuSer, axes, rollDataList, pitchDataList, yawDataList, dataPoints
 
     # roll, pitch, yaw = imuSer.get('rpy-rad')
-    roll, pitch, yaw = imuSer.get('rpy-rate')
+    roll, pitch, yaw = imuSer.get('rpy-est')
 
     rollDataList.append(roll)
     pitchDataList.append(pitch)
@@ -43,6 +43,7 @@ def animate(i):
 
 
 portName = '/dev/ttyACM0'
+portName = '/dev/ttyUSB0'
 imuSer = IMUSerialComm(portName, 115200, 0.1)
 time.sleep(5)
 

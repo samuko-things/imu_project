@@ -70,8 +70,8 @@ float northCorrect[3];
 
 
 //////////////////////////////////////////////////////////////////////
-unsigned long kSampleTime_ms = 5, kTime_ms;
-float kdt = (float)kSampleTime_ms/1000.00;
+unsigned long kSampleTime_us = 100, kTime_us;
+// float kdt = (float)kSampleTime_ms/1000.00;
 //////////////////////////////////////////////////////////////////////
 
 
@@ -83,23 +83,26 @@ float roll_rate_bias_est = 0.00;
 float P_roll[2][2]; // roll_est and bias uncertainty matrix
 float S_roll = 0.00;
 float K_roll[2]; // kalman gain for roll_est and roll_rate_bias_est respectively
-float Q_roll = 4.9917296e-07; // roll rate gyro bias process noise
-float R_roll = 7.47515756e-06; // roll angle measurement variance
+float Q_roll = 0.00; // roll rate gyro bias process noise
+float R_roll = 0.00; // roll angle measurement variance
 
 float old_roll = 0.00;
+unsigned long rollLastTime = micros();
 
 void rollKalmanFilter(float roll_rate_measurement, float roll_angle_measurement){
   if(abs(roll_angle_measurement-old_roll)> 2.00){
     roll_est = roll_angle_measurement;
   }
 
-  //prediction
-  roll_est = roll_est + (kdt * (roll_rate_measurement - roll_rate_bias_est));
+  float dt = (float)(micros() - rollLastTime)/1.0e6;
 
-  P_roll[0][0] += kdt * ((kdt*P_roll[1][1]) - P_roll[0][1] - P_roll[1][0] + Q_roll);
-  P_roll[0][1] -= kdt * P_roll[1][1];
-  P_roll[1][0] -= kdt * P_roll[1][1];
-  P_roll[1][1] += Q_roll * kdt;
+  //prediction
+  roll_est = roll_est + (dt * (roll_rate_measurement - roll_rate_bias_est));
+
+  P_roll[0][0] += dt * ((dt*P_roll[1][1]) - P_roll[0][1] - P_roll[1][0] + Q_roll);
+  P_roll[0][1] -= dt * P_roll[1][1];
+  P_roll[1][0] -= dt * P_roll[1][1];
+  P_roll[1][1] += Q_roll * dt;
 
   //correction
   
@@ -119,6 +122,8 @@ void rollKalmanFilter(float roll_rate_measurement, float roll_angle_measurement)
   P_roll[1][0] -= K_roll[1] * P00_temp;
   P_roll[1][1] -= K_roll[1] * P01_temp;
 
+  rollLastTime = micros();
+
   old_roll = roll_angle_measurement;
 }
 ////////////////////////////////////////////////////////////////////////////
@@ -133,23 +138,26 @@ float pitch_rate_bias_est = 0.00;
 float P_pitch[2][2]; // pitch_est and bias uncertainty matrix
 float S_pitch = 0.00;
 float K_pitch[2]; // kalman gain for pitch_est and pitch_rate_bias_est respectively
-float Q_pitch = 4.9917296e-07; // pitch rate gyro bias process noise
-float R_pitch = 7.47515756e-06; // pitch angle measurement variance
+float Q_pitch = 0.00; // pitch rate gyro bias process noise
+float R_pitch = 0.00; // pitch angle measurement variance
 
 float old_pitch=0.00;
+unsigned long pitchLastTime = micros();
 
 void pitchKalmanFilter(float pitch_rate_measurement, float pitch_angle_measurement){
   if(abs(pitch_angle_measurement-old_pitch)> 5.00){
     pitch_est = pitch_angle_measurement;
   }
 
-  //prediction
-  pitch_est = pitch_est + (kdt * (pitch_rate_measurement - pitch_rate_bias_est));
+  float dt = (float)(micros() - pitchLastTime)/1.0e6;
 
-  P_pitch[0][0] += kdt * ((kdt*P_pitch[1][1]) - P_pitch[0][1] - P_pitch[1][0] + Q_pitch);
-  P_pitch[0][1] -= kdt * P_pitch[1][1];
-  P_pitch[1][0] -= kdt * P_pitch[1][1];
-  P_pitch[1][1] += Q_pitch * kdt;
+  //prediction
+  pitch_est = pitch_est + (dt * (pitch_rate_measurement - pitch_rate_bias_est));
+
+  P_pitch[0][0] += dt * ((dt*P_pitch[1][1]) - P_pitch[0][1] - P_pitch[1][0] + Q_pitch);
+  P_pitch[0][1] -= dt * P_pitch[1][1];
+  P_pitch[1][0] -= dt * P_pitch[1][1];
+  P_pitch[1][1] += Q_pitch * dt;
 
   //correction
   S_pitch = P_pitch[0][0]+R_pitch;
@@ -168,6 +176,8 @@ void pitchKalmanFilter(float pitch_rate_measurement, float pitch_angle_measureme
   P_pitch[1][0] -= K_pitch[1] * P00_temp;
   P_pitch[1][1] -= K_pitch[1] * P01_temp;
 
+  rollLastTime = micros();
+
   old_pitch = pitch_angle_measurement;
 }
 ////////////////////////////////////////////////////////////////////////////
@@ -181,23 +191,26 @@ float yaw_rate_bias_est = 0.00;
 float P_yaw[2][2]; // yaw_est and bias uncertainty matrix
 float S_yaw = 0.00;
 float K_yaw[2]; // kalman gain for yaw_est and yaw_rate_bias_est respectively
-float Q_yaw = 4.9917296e-07; // yaw rate gyro bias process noise
-float R_yaw = 7.47515756e-06; // yaw angle measurement variance
+float Q_yaw = 0.00; // yaw rate gyro bias process noise
+float R_yaw = 0.00; // yaw angle measurement variance
 
 float old_yaw=0.00;
+unsigned long yawLastTime = micros();
 
 void yawKalmanFilter(float yaw_rate_measurement, float yaw_angle_measurement){
   if(abs(yaw_angle_measurement-old_yaw)> 5.00){
     yaw_est = yaw_angle_measurement;
   }
 
-  //prediction
-  yaw_est = yaw_est + (kdt * (yaw_rate_measurement - yaw_rate_bias_est));
+  float dt = (float)(micros() - yawLastTime)/1.0e6;
 
-  P_yaw[0][0] += kdt * ((kdt*P_yaw[1][1]) - P_yaw[0][1] - P_yaw[1][0] + Q_yaw);
-  P_yaw[0][1] -= kdt * P_yaw[1][1];
-  P_yaw[1][0] -= kdt * P_yaw[1][1];
-  P_yaw[1][1] += Q_yaw * kdt;
+  //prediction
+  yaw_est = yaw_est + (dt * (yaw_rate_measurement - yaw_rate_bias_est));
+
+  P_yaw[0][0] += dt * ((dt*P_yaw[1][1]) - P_yaw[0][1] - P_yaw[1][0] + Q_yaw);
+  P_yaw[0][1] -= dt * P_yaw[1][1];
+  P_yaw[1][0] -= dt * P_yaw[1][1];
+  P_yaw[1][1] += Q_yaw * dt;
 
   //correction
   S_yaw = P_yaw[0][0]+R_yaw;
@@ -215,6 +228,8 @@ void yawKalmanFilter(float yaw_rate_measurement, float yaw_angle_measurement){
   P_yaw[0][1] -= K_yaw[0] * P01_temp;
   P_yaw[1][0] -= K_yaw[1] * P00_temp;
   P_yaw[1][1] -= K_yaw[1] * P01_temp;
+
+  yawLastTime = micros();
 
   old_yaw = yaw_angle_measurement;
 }
