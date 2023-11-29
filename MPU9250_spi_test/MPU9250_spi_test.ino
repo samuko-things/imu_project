@@ -175,32 +175,10 @@ void loop() {
       vectOp.cross(east, down, mag_vect_norm);
       vectOp.cross(north, east, down);
 
-      float cr = cos(radians(roll_deg)), sr = sin(radians(roll_deg));
-      float cp = cos(radians(pitch_deg)), sp = sin(radians(pitch_deg));
-
-      float Rroll[3][3] = {
-        {1, 0, 0},
-        {0, cr, (-1 * sr)},
-        {0, sr, cr},
-      };
-
-      float Rpitch[3][3] = {
-        {cp, 0, sp},
-        {0, 1, 0},
-        {(-1 * sp), 0, cp},
-      };
-
-      float n_vect[3];
-
-      vectOp.transform(n_vect, Rroll, north);
-      vectOp.transform(northCorrect, Rpitch, n_vect);
-
       // yaw angle will be between -180 to 0 to +180
-      yaw_deg = atan2(-1 * northCorrect[1], northCorrect[0]) * 180.0 / PI;
+      yaw_deg = atan2(-1 * north[1], north[0]) * 180.0 / PI;
 
       //-------------------------------------------------------------------------------------//
-
-
 
 
 
