@@ -175,8 +175,31 @@ void loop() {
       vectOp.cross(east, down, mag_vect_norm);
       vectOp.cross(north, east, down);
 
+      // // yaw angle will be between -180 to 0 to +180
+      // yaw_deg = atan2(-1 * north[1], north[0]) * 180.0 / PI;
+
+      float cr = cos(radians(roll_deg)), sr = sin(radians(roll_deg));
+      float cp = cos(radians(pitch_deg)), sp = sin(radians(pitch_deg));
+
+      float Rroll[3][3] = {
+        {1, 0, 0},
+        {0, cr, (-1 * sr)},
+        {0, sr, cr},
+      };
+
+      float Rpitch[3][3] = {
+        {cp, 0, sp},
+        {0, 1, 0},
+        {(-1 * sp), 0, cp},
+      };
+
+      float n_vect[3];
+
+      vectOp.transform(n_vect, Rroll, north);
+      vectOp.transform(northCorrect, Rpitch, n_vect);
+
       // yaw angle will be between -180 to 0 to +180
-      yaw_deg = atan2(-1 * north[1], north[0]) * 180.0 / PI;
+      yaw_deg = atan2(-1 * northCorrect[1], northCorrect[0]) * 180.0 / PI;
 
       //-------------------------------------------------------------------------------------//
 
@@ -210,11 +233,10 @@ void loop() {
   if ((millis() - kTime_ms) >= kSampleTime_ms) {
 
     //-------- APPLY 1D KALMAN FILTER TO ROLL, PITCH AND YAW ------------//
-    rollKalmanFilter1D(roll_rate, roll);
-    pitchKalmanFilter1D(pitch_rate, pitch);
-    yawKalmanFilter1D(yaw_rate, yaw);
+    rollKalmanFilter(roll_rate, roll);
+    pitchKalmanFilter(pitch_rate, pitch);
+    yawKalmanFilter(yaw_rate, yaw);
     //--------------------------------------------------------------------//
-
 
     //------- CONVERT FILTERED RPY TO QUATERNIONS -----------------------//
     qx = ( sin(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
@@ -226,131 +248,4 @@ void loop() {
     kTime_ms = millis();
   }
 
-  // if ((millis() - printTime_ms) >= printSampleTime_ms) {
-  //   //--------------------------------------------//
-  //     // Serial.print("roll_deg = ");
-  //     // Serial.println(roll_deg, 1);
-  //     // Serial.print("pitch_deg = ");
-  //     // Serial.println(pitch_deg, 1);
-  //     // Serial.print("yaw_deg = ");
-  //     // Serial.println(yaw_deg, 1);
-
-  //     // Serial.print("roll_rad = ");
-  //     // Serial.println(roll, 4);
-  //     // Serial.print("pitch_rad = ");
-  //     // Serial.println(pitch, 4);
-  //     // Serial.print("yaw_rad = ");
-  //     // Serial.println(yaw, 4);
-
-  //     // Serial.print("roll_rate = ");
-  //     // Serial.println(roll_rate, 4);
-  //     // Serial.print("pitch_rate = ");
-  //     // Serial.println(pitch_rate, 4);
-  //     // Serial.print("yaw_rate = ");
-  //     // Serial.println(yaw_rate, 4);
-
-  //     // Serial.print("roll_est = ");
-  //     // Serial.println(roll_est, 4);
-  //     // Serial.print("pitch_est = ");
-  //     // Serial.println(pitch_est, 4);
-  //     // Serial.print("yaw_est = ");
-  //     // Serial.println(yaw_est, 4);
-
-  //     // Serial.println();
-  //     //--------------------------------------------//
-
-  //   printTime_ms = millis();
-  // }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// //---- GENERATE NED AND DCM -----------//
-//       // convert calibrated acc and mag vector to unit vector by normalizing
-//       float acc_vect_norm[3], mag_vect_norm[3];
-//       vectOp.normalize(acc_vect_norm, acc_vect);
-//       vectOp.normalize(mag_vect_norm, mag_vect);
-//       vectOp.scale(acc_vect_norm, acc_vect_norm, -1.00); //acc_vect_norm = -1.00*acc_vect_norm
-
-//       // vectOp.print3D(acc_vect_norm);
-//       // vectOp.print3D(mag_vect_norm);
-//       // Serial.println();
-
-//       // inertia NED frame
-//       float N[3]={1.0, 0.0, 0.0};
-//       float W[3]={0.0, 1.0, 0.0};
-//       float U[3]={0.0, 0.0, 1.0};
-
-//       // sensor body NED frame
-//       float n[3], w[3], u[3];
-
-//       vectOp.scale(acc_vect_norm, acc_vect_norm, -1.00); //acc_vect_norm = -1.00*acc_vect_norm
-//       vectOp.copy(u, acc_vect_norm); //up = acc_vect_norm
-//       vectOp.cross(w, u, mag_vect_norm); // west = up (cross) mag_vect_norm
-//       vectOp.cross(n, w, u); // north = west (cross) up
-
-//       //generate DCM
-//       float DCM[3][3];
-
-//       float C_00 = vectOp.cosineOfAngleBtw<float>(n, N);
-//       float C_01 = vectOp.cosineOfAngleBtw<float>(n, W);
-//       float C_02 = vectOp.cosineOfAngleBtw<float>(n, U);
-
-//       float C_10 = vectOp.cosineOfAngleBtw<float>(w, N);
-//       float C_11 = vectOp.cosineOfAngleBtw<float>(w, W);
-//       float C_12 = vectOp.cosineOfAngleBtw<float>(w, U);
-
-//       float C_20 = vectOp.cosineOfAngleBtw<float>(u, N);
-//       float C_21 = vectOp.cosineOfAngleBtw<float>(u, W);
-//       float C_22 = vectOp.cosineOfAngleBtw<float>(u, U);
-
-//       DCM[0][0] = C_00;
-//       DCM[0][1] = C_01;
-//       DCM[0][2] = C_02;
-
-//       DCM[1][0] = C_10;
-//       DCM[1][1] = C_11;
-//       DCM[1][2] = C_12;
-
-//       DCM[2][0] = C_20;
-//       DCM[2][1] = C_21;
-//       DCM[2][2] = C_22;
-
-//       // matOp.print(DCM);
-//       // Serial.println();
-
-//       //-----------------------------------------------------//
-
-
-
-//       //------ CALC RPY from DCM -----------------------//
-//       float roll = atan2(DCM[1][2], DCM[2][2]);
-//       float pitch = -1.0*asin(DCM[0][2]);
-//       float yaw = atan2(DCM[0][1], DCM[0][0]);
-
-//       Serial.print("roll_angle = ");
-//       Serial.println(roll*180/M_PI);
-//       Serial.print("pitch_angle = ");
-//       Serial.println(pitch*180/M_PI);
-//       Serial.print("yaw_angle = ");
-//       Serial.println(yaw*180/M_PI);
-
-//       Serial.println();

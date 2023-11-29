@@ -355,71 +355,6 @@ String sendAmat22(){
 
 
 
-///////////////////////////////////////////////////////////////////
-String updateRollAngleVariance(float rollAngleVariance){
-  setRollAngleVariance(rollAngleVariance);
-  roll_angle_variance = getRollAngleVariance();
-  return "1";
-}
-String sendRollAngleVariance(){
-  return String(roll_angle_variance,10);
-}
-
-
-String updatePitchAngleVariance(float pitchAngleVariance){
-  setPitchAngleVariance(pitchAngleVariance);
-  pitch_angle_variance = getPitchAngleVariance();
-  return "1";
-}
-String sendPitchAngleVariance(){
-  return String(pitch_angle_variance,10);
-}
-
-
-String updateYawAngleVariance(float yawAngleVariance){
-  setYawAngleVariance(yawAngleVariance);
-  yaw_angle_variance = getYawAngleVariance();
-  return "1";
-}
-String sendYawAngleVariance(){
-  return String(yaw_angle_variance,10);
-}
-//////////////////////////////////////////////////////////////////
-
-
-
-///////////////////////////////////////////////////////////////////
-String updateRollRateVariance(float rollRateVariance){
-  setRollRateVariance(rollRateVariance);
-  roll_rate_variance = getRollRateVariance();
-  return "1";
-}
-String sendRollRateVariance(){
-  return String(roll_rate_variance,10);
-}
-
-
-String updatePitchRateVariance(float pitchRateVariance){
-  setPitchRateVariance(pitchRateVariance);
-  pitch_rate_variance = getPitchRateVariance();
-  return "1";
-}
-String sendPitchRateVariance(){
-  return String(pitch_rate_variance,10);
-}
-
-
-String updateYawRateVariance(float yawRateVariance){
-  setYawRateVariance(yawRateVariance);
-  yaw_rate_variance = getYawRateVariance();
-  return "1";
-}
-String sendYawRateVariance(){
-  return String(yaw_rate_variance,10);
-}
-//////////////////////////////////////////////////////////////////
-
-
 
 
 
@@ -671,48 +606,6 @@ void serialReceiveAndSendData() {
       else if (serDataBuffer[0] == "amat-22") {
         if (serDataBuffer[1]=="") ser_msg = sendAmat22();
         else ser_msg = updateAmat22(serDataBuffer[1].toFloat());
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if (serDataBuffer[0] == "rAng-var") {
-        if (serDataBuffer[1]=="") ser_msg = sendRollAngleVariance();
-        else ser_msg = updateRollAngleVariance(serDataBuffer[1].toFloat());
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if (serDataBuffer[0] == "rRate-var") {
-        if (serDataBuffer[1]=="") ser_msg = sendRollRateVariance();
-        else ser_msg = updateRollRateVariance(serDataBuffer[1].toFloat());
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if (serDataBuffer[0] == "pAng-var") {
-        if (serDataBuffer[1]=="") ser_msg = sendPitchAngleVariance();
-        else ser_msg = updatePitchAngleVariance(serDataBuffer[1].toFloat());
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if (serDataBuffer[0] == "pRate-var") {
-        if (serDataBuffer[1]=="") ser_msg = sendPitchRateVariance();
-        else ser_msg = updatePitchRateVariance(serDataBuffer[1].toFloat());
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if (serDataBuffer[0] == "yAng-var") {
-        if (serDataBuffer[1]=="") ser_msg = sendYawAngleVariance();
-        else ser_msg = updateYawAngleVariance(serDataBuffer[1].toFloat());
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if (serDataBuffer[0] == "yRate-var") {
-        if (serDataBuffer[1]=="") ser_msg = sendYawRateVariance();
-        else ser_msg = updateYawRateVariance(serDataBuffer[1].toFloat());
         Serial.println(ser_msg);
         ser_msg = "";
       }

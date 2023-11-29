@@ -70,63 +70,164 @@ float northCorrect[3];
 
 
 //////////////////////////////////////////////////////////////////////
-unsigned long kSampleTime_ms = 10, kTime_ms;
-float kSampleTime = (float)kSampleTime_ms/1000.00;
+unsigned long kSampleTime_ms = 5, kTime_ms;
+float kdt = (float)kSampleTime_ms/1000.00;
+//////////////////////////////////////////////////////////////////////
 
 
-float roll_est = 0.0, roll_uncertainty = 100.0;
-float roll_rate_variance = 0.00;
-float roll_angle_variance = 0.00;
 
-void rollKalmanFilter1D(float roll_rate_measurement, float roll_angle_measurement){
+//////////////////////////////////////////////////////////////////////
+float roll_est = 0.000;
+float roll_rate_bias_est = 0.00;
+
+float P_roll[2][2]; // roll_est and bias uncertainty matrix
+float S_roll = 0.00;
+float K_roll[2]; // kalman gain for roll_est and roll_rate_bias_est respectively
+float Q_roll = 4.9917296e-07; // roll rate gyro bias process noise
+float R_roll = 7.47515756e-06; // roll angle measurement variance
+
+float old_roll = 0.00;
+
+void rollKalmanFilter(float roll_rate_measurement, float roll_angle_measurement){
+  if(abs(roll_angle_measurement-old_roll)> 2.00){
+    roll_est = roll_angle_measurement;
+  }
+
   //prediction
-  roll_est = roll_est + (kSampleTime * roll_rate_measurement);
-  roll_uncertainty = roll_uncertainty + ((kSampleTime*kSampleTime) * roll_rate_variance);
+  roll_est = roll_est + (kdt * (roll_rate_measurement - roll_rate_bias_est));
+
+  P_roll[0][0] += kdt * ((kdt*P_roll[1][1]) - P_roll[0][1] - P_roll[1][0] + Q_roll);
+  P_roll[0][1] -= kdt * P_roll[1][1];
+  P_roll[1][0] -= kdt * P_roll[1][1];
+  P_roll[1][1] += Q_roll * kdt;
 
   //correction
-  float kalman_gain = roll_uncertainty/(roll_uncertainty + roll_angle_variance);
-  roll_est = roll_est + (kalman_gain * (roll_angle_measurement - roll_est));
-  roll_uncertainty = (1-kalman_gain) * roll_uncertainty;
+  
+  S_roll = P_roll[0][0]+R_roll;
+
+  K_roll[0] = P_roll[0][0] / S_roll;
+  K_roll[1] = P_roll[1][0] / S_roll;
+
+  roll_est = roll_est + (K_roll[0] * (roll_angle_measurement - roll_est));
+  roll_rate_bias_est = roll_rate_bias_est + (K_roll[1] * (roll_angle_measurement - roll_est));
+
+  float P00_temp = P_roll[0][0];
+  float P01_temp = P_roll[0][1];
+
+  P_roll[0][0] -= K_roll[0] * P00_temp;
+  P_roll[0][1] -= K_roll[0] * P01_temp;
+  P_roll[1][0] -= K_roll[1] * P00_temp;
+  P_roll[1][1] -= K_roll[1] * P01_temp;
+
+  old_roll = roll_angle_measurement;
 }
+////////////////////////////////////////////////////////////////////////////
 
 
-float pitch_est = 0.0, pitch_uncertainty = 100.0; 
-float pitch_rate_variance = 0.00;
-float pitch_angle_variance = 0.00;
 
-void pitchKalmanFilter1D(float pitch_rate_measurement, float pitch_angle_measurement){
+
+//////////////////////////////////////////////////////////////////////
+float pitch_est = 0.000;
+float pitch_rate_bias_est = 0.00;
+
+float P_pitch[2][2]; // pitch_est and bias uncertainty matrix
+float S_pitch = 0.00;
+float K_pitch[2]; // kalman gain for pitch_est and pitch_rate_bias_est respectively
+float Q_pitch = 4.9917296e-07; // pitch rate gyro bias process noise
+float R_pitch = 7.47515756e-06; // pitch angle measurement variance
+
+float old_pitch=0.00;
+
+void pitchKalmanFilter(float pitch_rate_measurement, float pitch_angle_measurement){
+  if(abs(pitch_angle_measurement-old_pitch)> 5.00){
+    pitch_est = pitch_angle_measurement;
+  }
+
   //prediction
-  pitch_est = pitch_est + (kSampleTime * pitch_rate_measurement);
-  pitch_uncertainty = pitch_uncertainty + ((kSampleTime*kSampleTime) * pitch_rate_variance);
+  pitch_est = pitch_est + (kdt * (pitch_rate_measurement - pitch_rate_bias_est));
+
+  P_pitch[0][0] += kdt * ((kdt*P_pitch[1][1]) - P_pitch[0][1] - P_pitch[1][0] + Q_pitch);
+  P_pitch[0][1] -= kdt * P_pitch[1][1];
+  P_pitch[1][0] -= kdt * P_pitch[1][1];
+  P_pitch[1][1] += Q_pitch * kdt;
 
   //correction
-  float kalman_gain = pitch_uncertainty/(pitch_uncertainty + pitch_angle_variance);
-  pitch_est = pitch_est + (kalman_gain * (pitch_angle_measurement - pitch_est));
-  pitch_uncertainty = (1-kalman_gain) * pitch_uncertainty;
+  S_pitch = P_pitch[0][0]+R_pitch;
+
+  K_pitch[0] = P_pitch[0][0] / S_pitch;
+  K_pitch[1] = P_pitch[1][0] / S_pitch;
+
+  pitch_est = pitch_est + (K_pitch[0] * (pitch_angle_measurement - pitch_est));
+  pitch_rate_bias_est = pitch_rate_bias_est + (K_pitch[1] * (pitch_angle_measurement - pitch_est));
+
+  float P00_temp = P_pitch[0][0];
+  float P01_temp = P_pitch[0][1];
+
+  P_pitch[0][0] -= K_pitch[0] * P00_temp;
+  P_pitch[0][1] -= K_pitch[0] * P01_temp;
+  P_pitch[1][0] -= K_pitch[1] * P00_temp;
+  P_pitch[1][1] -= K_pitch[1] * P01_temp;
+
+  old_pitch = pitch_angle_measurement;
 }
+////////////////////////////////////////////////////////////////////////////
 
 
-float yaw_est = 0.0, yaw_uncertainty = 10000.0;
-float yaw_rate_variance = 0.00;
-float yaw_angle_variance = 0.00;
 
-void yawKalmanFilter1D(float yaw_rate_measurement, float yaw_angle_measurement){
+//////////////////////////////////////////////////////////////////////
+float yaw_est = 0.000;
+float yaw_rate_bias_est = 0.00;
+
+float P_yaw[2][2]; // yaw_est and bias uncertainty matrix
+float S_yaw = 0.00;
+float K_yaw[2]; // kalman gain for yaw_est and yaw_rate_bias_est respectively
+float Q_yaw = 4.9917296e-07; // yaw rate gyro bias process noise
+float R_yaw = 7.47515756e-06; // yaw angle measurement variance
+
+float old_yaw=0.00;
+
+void yawKalmanFilter(float yaw_rate_measurement, float yaw_angle_measurement){
+  if(abs(yaw_angle_measurement-old_yaw)> 5.00){
+    yaw_est = yaw_angle_measurement;
+  }
+
   //prediction
-  yaw_est = yaw_est + (kSampleTime * yaw_rate_measurement);
-  yaw_uncertainty = yaw_uncertainty + ((kSampleTime*kSampleTime) * yaw_rate_variance);
+  yaw_est = yaw_est + (kdt * (yaw_rate_measurement - yaw_rate_bias_est));
+
+  P_yaw[0][0] += kdt * ((kdt*P_yaw[1][1]) - P_yaw[0][1] - P_yaw[1][0] + Q_yaw);
+  P_yaw[0][1] -= kdt * P_yaw[1][1];
+  P_yaw[1][0] -= kdt * P_yaw[1][1];
+  P_yaw[1][1] += Q_yaw * kdt;
 
   //correction
-  float kalman_gain = yaw_uncertainty/(yaw_uncertainty + yaw_angle_variance);
-  yaw_est = yaw_est + (kalman_gain * (yaw_angle_measurement - yaw_est));
-  yaw_uncertainty = (1-kalman_gain) * yaw_uncertainty;
+  S_yaw = P_yaw[0][0]+R_yaw;
+
+  K_yaw[0] = P_yaw[0][0] / S_yaw;
+  K_yaw[1] = P_yaw[1][0] / S_yaw;
+
+  yaw_est = yaw_est + (K_yaw[0] * (yaw_angle_measurement - yaw_est));
+  yaw_rate_bias_est = yaw_rate_bias_est + (K_yaw[1] * (yaw_angle_measurement - yaw_est));
+
+  float P00_temp = P_yaw[0][0];
+  float P01_temp = P_yaw[0][1];
+
+  P_yaw[0][0] -= K_yaw[0] * P00_temp;
+  P_yaw[0][1] -= K_yaw[0] * P01_temp;
+  P_yaw[1][0] -= K_yaw[1] * P00_temp;
+  P_yaw[1][1] -= K_yaw[1] * P01_temp;
+
+  old_yaw = yaw_angle_measurement;
 }
 ////////////////////////////////////////////////////////////////////////////
 
 
 
 ////////////////////////////////////////////////////////////////////////////
-float qw, qx, qy, qz;
+float qw=0.00, qx=0.00, qy=0.00, qz=0.00;
 ////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////
 
 #endif
 
