@@ -16,7 +16,7 @@ time.sleep(5)
 
 
 # How many sensor samples we want to store
-HISTORY_SIZE = 1500
+HISTORY_SIZE = 1000
 
 serialport = None
 

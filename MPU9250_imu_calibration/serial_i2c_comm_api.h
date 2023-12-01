@@ -1,7 +1,6 @@
 #ifndef SERIAL_I2C_COMM_API_H
 #define SERIAL_I2C_COMM_API_H
 #include<Arduino.h>
-#include "global_eeprom_variables.h"
 #include "eeprom_setup.h"
 
 
@@ -95,15 +94,6 @@ String sendCalMagData(){
 
 
 
-String sendRPY_deg(){
-  String data = String(roll_deg, 2);
-  data += ",";
-  data += String(pitch_deg, 2);
-  data += ",";
-  data += String(yaw_deg, 2);
-  return data;
-}
-
 String sendRPY_rad(){
   String data = String(roll, 4);
   data += ",";
@@ -122,47 +112,7 @@ String sendRPY_rate(){
   return data;
 }
 
-String sendRPY_est(){
-  String data = String(roll_est, 4);
-  data += ",";
-  data += String(pitch_est, 4);
-  data += ",";
-  data += String(yaw_est, 4);
-  return data;
-}
-
-
-String sendQuternions(){
-  String data = String(qw, 4);
-  data += ",";
-  data += String(qx, 4);
-  data += ",";
-  data += String(qy, 4);
-  data += ",";
-  data += String(qz, 4);
-  return data;
-}
-
-
-// String sendLinearAccelerationRaw(){
-//   String data = String(lin_acc_x, 4);
-//   data += ",";
-//   data += String(lin_acc_y, 4);
-//   data += ",";
-//   data += String(lin_acc_z, 4);
-//   return data;
-// }
-
-// String sendLinearAccelerationEst(){
-//   String data = String(lin_acc_x_est, 4);
-//   data += ",";
-//   data += String(lin_acc_y_est, 4);
-//   data += ",";
-//   data += String(lin_acc_z_est, 4);
-//   return data;
-// }
 ///////////////////////////////////////////////////////////////////////////////////////
-
 
 
 
@@ -502,32 +452,27 @@ void serialReceiveAndSendData() {
     if (serDataBuffer[0] != ""){
 
       /////////////// FUNCTION CALLS /////////////////////
-      if(serDataBuffer[0] == "acc-raw"){
-        ser_msg = sendRawAccData();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
 
-      else if(serDataBuffer[0] == "acc-cal"){
+      if(serDataBuffer[0] == "acc-cal"){
         ser_msg = sendCalAccData();
         Serial.println(ser_msg);
         ser_msg = "";
       }
-      
-      else if(serDataBuffer[0] == "gyro-raw"){
-        ser_msg = sendRawGyroData();
+
+      else if(serDataBuffer[0] == "acc-raw"){
+        ser_msg = sendRawAccData();
         Serial.println(ser_msg);
         ser_msg = "";
       }
-
+      
       else if(serDataBuffer[0] == "gyro-cal"){
         ser_msg = sendCalGyroData();
         Serial.println(ser_msg);
         ser_msg = "";
       }
 
-      else if(serDataBuffer[0] == "mag-raw"){
-        ser_msg = sendRawMagData();
+      else if(serDataBuffer[0] == "gyro-raw"){
+        ser_msg = sendRawGyroData();
         Serial.println(ser_msg);
         ser_msg = "";
       }
@@ -538,11 +483,12 @@ void serialReceiveAndSendData() {
         ser_msg = "";
       }
 
-      else if(serDataBuffer[0] == "rpy-deg"){
-        ser_msg = sendRPY_deg();
+      else if(serDataBuffer[0] == "mag-raw"){
+        ser_msg = sendRawMagData();
         Serial.println(ser_msg);
         ser_msg = "";
       }
+
 
       else if(serDataBuffer[0] == "rpy-rad"){
         ser_msg = sendRPY_rad();
@@ -555,30 +501,6 @@ void serialReceiveAndSendData() {
         Serial.println(ser_msg);
         ser_msg = "";
       }
-
-      else if(serDataBuffer[0] == "rpy-est"){
-        ser_msg = sendRPY_est();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if(serDataBuffer[0] == "quat"){
-        ser_msg = sendQuternions();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      // else if(serDataBuffer[0] == "alin-raw"){
-      //   ser_msg = sendLinearAccelerationRaw();
-      //   Serial.println(ser_msg);
-      //   ser_msg = "";
-      // }
-
-      // else if(serDataBuffer[0] == "alin-est"){
-      //   ser_msg = sendLinearAccelerationEst();
-      //   Serial.println(ser_msg);
-      //   ser_msg = "";
-      // }
 
       else if (serDataBuffer[0] == "ax-off") {
         if (serDataBuffer[1]=="") ser_msg = sendAxOffset();
@@ -753,7 +675,8 @@ void serialReceiveAndSendData() {
         Serial.println(ser_msg);
         ser_msg = "";
       }
-      ////////////////////////////////////////////////////
+
+      ////////////////////////////////////////////////////////////////////////////////////
 
     } else {
       ser_msg = "0";

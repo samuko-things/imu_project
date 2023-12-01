@@ -12,7 +12,7 @@ imuSer = IMUSerialComm(portName, 115200, 0.1)
 time.sleep(5)
 
 # How many sensor samples we want to store
-HISTORY_SIZE = 1500
+HISTORY_SIZE = 1000
 
 serialport = None
 
@@ -51,7 +51,7 @@ def run_caliberation():
 
     ax_offset = average(acc_x)
     ay_offset = average(acc_y)
-    az_offset = (average(acc_z) + 9.8)
+    az_offset = (average(acc_z) - 9.8)
 
     imuSer.send('ax-off', ax_offset)
     ax_offset = imuSer.get('ax-off')

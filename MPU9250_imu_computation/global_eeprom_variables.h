@@ -1,7 +1,7 @@
 #ifndef GLOBAL_EEPROM_VARIABLES
 #define GLOBAL_EEPROM_VARIABLES
 
-#include <MatVectLab.h>
+// #include "low_pass_filter_setup.h"
 
 
 ///////////////////////////////////////////////////
@@ -18,9 +18,29 @@ float ayOff = 0.00;
 float azOff = 0.00;
 
 float acc_vect[3];
+float acc_vect_norm[3];
+
+float linear_acc_vect[3];
+
+float axLin = 0.00;
+float ayLin = 0.00;
+float azLin = 0.00;
+
+// float lin_acc_x_est;
+// float lin_acc_y_est;
+// float lin_acc_z_est;
+
+float gravity_acc_vect[3] = {0.00, 0.00, 9.8};
+
+// adaptive lowpass Filter
+// int order = 2;
+// float cutOffFreq = 1.5;
+
+// // Filter instance
+// AdaptiveLowPassFilter axLinFilter(order, cutOffFreq);
+// AdaptiveLowPassFilter ayLinFilter(order, cutOffFreq);
+// AdaptiveLowPassFilter azLinFilter(order, cutOffFreq);
 ////////////////////////////////////////////////////
-
-
 
 
 ////////////////////////////////////////////////////
@@ -55,23 +75,20 @@ float A_mat[3][3];
 float b_vect[3];
 
 float mag_vect[3];
+float mag_vect_norm[3];
 ////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////
-float acc_vect_norm_up[3], acc_vect_norm_down[3], mag_vect_norm[3];
-
 float roll, pitch, yaw;
 float roll_deg, pitch_deg, yaw_deg;
 float roll_rate, pitch_rate, yaw_rate;
-float north[3], east[3], down[3];
+float north[3], west[3], up[3];
 float northCorrect[3];
-//////////////////////////////////////////////////////////////////////
 
-
-//////////////////////////////////////////////////////////////////////
-unsigned long kSampleTime_us = 100, kTime_us;
-// float kdt = (float)kSampleTime_ms/1000.00;
+float new_yaw_deg, ref_yaw_deg;
+bool startYawRefAngle = true;
+int count;
 //////////////////////////////////////////////////////////////////////
 
 
@@ -114,13 +131,10 @@ void rollKalmanFilter(float roll_rate_measurement, float roll_angle_measurement)
   roll_est = roll_est + (K_roll[0] * (roll_angle_measurement - roll_est));
   roll_rate_bias_est = roll_rate_bias_est + (K_roll[1] * (roll_angle_measurement - roll_est));
 
-  float P00_temp = P_roll[0][0];
-  float P01_temp = P_roll[0][1];
-
-  P_roll[0][0] -= K_roll[0] * P00_temp;
-  P_roll[0][1] -= K_roll[0] * P01_temp;
-  P_roll[1][0] -= K_roll[1] * P00_temp;
-  P_roll[1][1] -= K_roll[1] * P01_temp;
+  P_roll[0][0] -= K_roll[0] * P_roll[0][0];
+  P_roll[0][1] -= K_roll[0] * P_roll[0][1];
+  P_roll[1][0] -= K_roll[1] * P_roll[0][0];
+  P_roll[1][1] -= K_roll[1] * P_roll[0][1];
 
   rollLastTime = micros();
 
@@ -168,15 +182,12 @@ void pitchKalmanFilter(float pitch_rate_measurement, float pitch_angle_measureme
   pitch_est = pitch_est + (K_pitch[0] * (pitch_angle_measurement - pitch_est));
   pitch_rate_bias_est = pitch_rate_bias_est + (K_pitch[1] * (pitch_angle_measurement - pitch_est));
 
-  float P00_temp = P_pitch[0][0];
-  float P01_temp = P_pitch[0][1];
+  P_pitch[0][0] -= K_pitch[0] * P_pitch[0][0];
+  P_pitch[0][1] -= K_pitch[0] * P_pitch[0][1];
+  P_pitch[1][0] -= K_pitch[1] * P_pitch[0][0];
+  P_pitch[1][1] -= K_pitch[1] * P_pitch[0][1];
 
-  P_pitch[0][0] -= K_pitch[0] * P00_temp;
-  P_pitch[0][1] -= K_pitch[0] * P01_temp;
-  P_pitch[1][0] -= K_pitch[1] * P00_temp;
-  P_pitch[1][1] -= K_pitch[1] * P01_temp;
-
-  rollLastTime = micros();
+  pitchLastTime = micros();
 
   old_pitch = pitch_angle_measurement;
 }
@@ -221,13 +232,10 @@ void yawKalmanFilter(float yaw_rate_measurement, float yaw_angle_measurement){
   yaw_est = yaw_est + (K_yaw[0] * (yaw_angle_measurement - yaw_est));
   yaw_rate_bias_est = yaw_rate_bias_est + (K_yaw[1] * (yaw_angle_measurement - yaw_est));
 
-  float P00_temp = P_yaw[0][0];
-  float P01_temp = P_yaw[0][1];
-
-  P_yaw[0][0] -= K_yaw[0] * P00_temp;
-  P_yaw[0][1] -= K_yaw[0] * P01_temp;
-  P_yaw[1][0] -= K_yaw[1] * P00_temp;
-  P_yaw[1][1] -= K_yaw[1] * P01_temp;
+  P_yaw[0][0] -= K_yaw[0] * P_yaw[0][0];
+  P_yaw[0][1] -= K_yaw[0] * P_yaw[0][1];
+  P_yaw[1][0] -= K_yaw[1] * P_yaw[0][0];
+  P_yaw[1][1] -= K_yaw[1] * P_yaw[0][1];
 
   yawLastTime = micros();
 
@@ -241,8 +249,6 @@ void yawKalmanFilter(float yaw_rate_measurement, float yaw_angle_measurement){
 float qw=0.00, qx=0.00, qy=0.00, qz=0.00;
 ////////////////////////////////////////////////////////////////////////////
 
-
-///////////////////////////////////////////////////////////////////////////
 
 #endif
 
