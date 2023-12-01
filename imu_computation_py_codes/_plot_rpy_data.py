@@ -30,7 +30,7 @@ def animate(i):
     axes.grid(which = "minor", linewidth = 0.2)
     axes.minorticks_on()
 
-    axes.set_ylim([-12,12]) # Set Y axis limit of plot
+    axes.set_ylim([-4,4]) # Set Y axis limit of plot
     axes.set_title("RPY Data") # Set title of figure
     axes.set_ylabel("angular pos (radians)") # Set title of y axis 
     axes.set_xlabel("number of data points") # Set title of z axis 
@@ -42,11 +42,13 @@ def animate(i):
 
 
 
-portName = '/dev/ttyACM0'
+# portName = '/dev/ttyACM0'
 portName = '/dev/ttyUSB0'
 imuSer = IMUSerialComm(portName, 115200, 0.1)
-time.sleep(5)
-
+for i in range(30):
+  time.sleep(1.0)
+  print(i+1, " sec")
+# time.sleep(30)
 
 rollDataList = []
 pitchDataList = []

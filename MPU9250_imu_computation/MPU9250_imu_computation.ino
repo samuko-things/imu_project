@@ -256,24 +256,24 @@ void loop() {
 
       //---------------- ADD ZERO REFEFENCE ANGLE FOR YAW ----------------------------//
 
-      if (startYawRefAngle){
-        ref_yaw_deg = yaw_deg;
-        if(count >= 50){
-          startYawRefAngle = false;
-        }
-        else count += 1;
+      // if (startYawRefAngle){
+      //   ref_yaw_deg = yaw_deg;
+      //   if(count >= 50){
+      //     startYawRefAngle = false;
+      //   }
+      //   else count += 1;
         
-      }
+      // }
 
-      if ((ref_yaw_deg >= 0) && ((-180+ref_yaw_deg)>=yaw_deg)&&(yaw_deg>=-180)){
-        new_yaw_deg = 360.00 + yaw_deg - ref_yaw_deg;
-      }
-      else if ((ref_yaw_deg < 0) && (180>=yaw_deg)&&(yaw_deg>=(180+ref_yaw_deg))){
-        new_yaw_deg = -360.00 + yaw_deg - ref_yaw_deg;
-      }
-      else {
-        new_yaw_deg = yaw_deg - ref_yaw_deg;
-      }
+      // if ((ref_yaw_deg >= 0) && ((-180+ref_yaw_deg)>=yaw_deg)&&(yaw_deg>=-180)){
+      //   new_yaw_deg = 360.00 + yaw_deg - ref_yaw_deg;
+      // }
+      // else if ((ref_yaw_deg < 0) && (180>=yaw_deg)&&(yaw_deg>=(180+ref_yaw_deg))){
+      //   new_yaw_deg = -360.00 + yaw_deg - ref_yaw_deg;
+      // }
+      // else {
+      //   new_yaw_deg = yaw_deg - ref_yaw_deg;
+      // }
 
       //------------------------------------------------------------------------------//
 
@@ -281,7 +281,8 @@ void loop() {
       //-----------------------//
       roll = roll_deg * PI / 180.0;
       pitch = pitch_deg * PI / 180.0;
-      yaw = new_yaw_deg * PI / 180.0;
+      yaw = yaw_deg * PI / 180.0;
+      // yaw = new_yaw_deg * PI / 180.0;
       //-----------------------//
 
 

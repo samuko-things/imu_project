@@ -48,7 +48,10 @@ def animate(i):
 # portName = '/dev/ttyACM0'
 portName = '/dev/ttyUSB0'
 imuSer = IMUSerialComm(portName, 115200, 0.1)
-time.sleep(5)
+for i in range(30):
+  time.sleep(1.0)
+  print(i+1, " sec")
+# time.sleep(30)
 
 
 unfilteredDataList = []
