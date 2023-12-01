@@ -51,12 +51,30 @@ String sendRPY_rate(){
   return data;
 }
 
+
 String sendRPY_est(){
   String data = String(roll_est, 4);
   data += ",";
   data += String(pitch_est, 4);
   data += ",";
   data += String(yaw_est, 4);
+  return data;
+}
+
+
+String sendRPY_est_with_heading(){
+  String data = String(roll_est, 4);
+  data += ",";
+  data += String(pitch_est, 4);
+  data += ",";
+  data += String(heading, 4);
+  return data;
+}
+
+String send_heading(){
+  String data = String(heading, 4);
+  data += ",";
+  data += String(heading_deg, 2);
   return data;
 }
 
@@ -149,6 +167,18 @@ void serialReceiveAndSendData() {
 
       else if(serDataBuffer[0] == "rpy-est"){
         ser_msg = sendRPY_est();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if(serDataBuffer[0] == "rpy-esth"){
+        ser_msg = sendRPY_est_with_heading();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if(serDataBuffer[0] == "heading"){
+        ser_msg = send_heading();
         Serial.println(ser_msg);
         ser_msg = "";
       }

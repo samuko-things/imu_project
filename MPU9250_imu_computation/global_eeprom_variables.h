@@ -86,9 +86,10 @@ float roll_rate, pitch_rate, yaw_rate;
 float north[3], west[3], up[3];
 float northCorrect[3];
 
-float new_yaw_deg, ref_yaw_deg;
+float new_yaw_deg=0.00, ref_yaw_deg=0.00;
 bool startYawRefAngle = true;
 int count;
+float heading=0.00, heading_deg=0.00;
 //////////////////////////////////////////////////////////////////////
 
 

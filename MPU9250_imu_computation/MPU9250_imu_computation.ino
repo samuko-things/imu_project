@@ -27,7 +27,7 @@
 bfs::Mpu9250 imu;
 
 unsigned long serialCommTime, serialCommSampleTime = 10;  // ms -> (1000/sampleTime) hz
-unsigned long readImuTime, readImuSampleTime = 5; // ms -> (1000/sampleTime) hz
+unsigned long readImuTime, readImuSampleTime = 2; // ms -> (1000/sampleTime) hz
 
 
 // void accFilterInit(){
@@ -48,12 +48,12 @@ unsigned long readImuTime, readImuSampleTime = 5; // ms -> (1000/sampleTime) hz
 
 
 void setup() {
- initLed();
-  offLed();
-
   /* Serial to display data */
   Serial.begin(115200);
   Serial.setTimeout(2);
+
+  initLed();
+  offLed();
 
   //---------------- START IMU IN SPI MODE -----------------------//
   /* Start the SPI bus */
@@ -110,6 +110,8 @@ void setup() {
   onLed();
   delay(1000);
   offLed();
+
+  ref_yaw_deg = 0.00;
 
 
   // accFilterInit();
@@ -256,24 +258,25 @@ void loop() {
 
       //---------------- ADD ZERO REFEFENCE ANGLE FOR YAW ----------------------------//
 
-      // if (startYawRefAngle){
-      //   ref_yaw_deg = yaw_deg;
-      //   if(count >= 50){
-      //     startYawRefAngle = false;
-      //   }
-      //   else count += 1;
+      if (startYawRefAngle){
+        ref_yaw_deg = 0.00;
+        if(count >= 200){
+          ref_yaw_deg = yaw_deg;
+          startYawRefAngle = false;
+        }
+        else count += 1;
         
-      // }
+      }
 
-      // if ((ref_yaw_deg >= 0) && ((-180+ref_yaw_deg)>=yaw_deg)&&(yaw_deg>=-180)){
-      //   new_yaw_deg = 360.00 + yaw_deg - ref_yaw_deg;
-      // }
-      // else if ((ref_yaw_deg < 0) && (180>=yaw_deg)&&(yaw_deg>=(180+ref_yaw_deg))){
-      //   new_yaw_deg = -360.00 + yaw_deg - ref_yaw_deg;
-      // }
-      // else {
-      //   new_yaw_deg = yaw_deg - ref_yaw_deg;
-      // }
+      if ((ref_yaw_deg >= 0) && ((-180+ref_yaw_deg)>=yaw_deg)&&(yaw_deg>=-180)){
+        new_yaw_deg = 360.00 + yaw_deg - ref_yaw_deg;
+      }
+      else if ((ref_yaw_deg < 0) && (180>=yaw_deg)&&(yaw_deg>=(180+ref_yaw_deg))){
+        new_yaw_deg = -360.00 + yaw_deg - ref_yaw_deg;
+      }
+      else {
+        new_yaw_deg = yaw_deg - ref_yaw_deg;
+      }
 
       //------------------------------------------------------------------------------//
 
@@ -281,8 +284,8 @@ void loop() {
       //-----------------------//
       roll = roll_deg * PI / 180.0;
       pitch = pitch_deg * PI / 180.0;
-      yaw = yaw_deg * PI / 180.0;
-      // yaw = new_yaw_deg * PI / 180.0;
+      // yaw = yaw_deg * PI / 180.0;
+      yaw = new_yaw_deg * PI / 180.0;
       //-----------------------//
 
 
@@ -344,6 +347,23 @@ void loop() {
     // lin_acc_y_est = ayLinFilter.filt(ayLin);
     // lin_acc_z_est = azLinFilter.filt(azLin);
 
+    //------------------------------------------------------------------------------//
+
+
+    //---------------- GET BACK HEADINGS HEADING ----------------------------//
+    heading_deg = degrees(yaw_est)+ref_yaw_deg;
+
+    if ((ref_yaw_deg >= 0) && (heading_deg>180)){
+      heading_deg = heading_deg - 360.00;
+      heading = radians(heading_deg);
+    }
+    else if ((ref_yaw_deg < 0) && (heading_deg<-180)){
+      heading_deg = heading_deg + 360.00;
+      heading = radians(heading_deg);
+    }
+    else {
+      heading = radians(heading_deg);
+    }
     //------------------------------------------------------------------------------//
 
 
