@@ -9,11 +9,11 @@ from imu_serial_comm_lib import IMUSerialComm
 def animate(i):
     global imuSer, unfiltered, filtered, unfilteredDataList, filteredDataList, dataPoints
 
-    roll, pitch, yaw = imuSer.get('rpy-rad')
-    roll_est, pitch_est, yaw_est = imuSer.get('rpy-est')
+    ax_lin_raw, ay_lin_raw, az_lin_raw = imuSer.get('alin-raw')
+    ax_lin_est, ay_lin_est, az_lin_est = imuSer.get('alin-est')
 
-    unfilteredDataList.append(pitch)
-    filteredDataList.append(pitch_est)
+    unfilteredDataList.append(az_lin_raw)
+    filteredDataList.append(az_lin_est)
 
     # Fix the list size so that the animation plot 'window' is x number of points
     unfilteredDataList = unfilteredDataList[-dataPoints:] 
@@ -27,19 +27,20 @@ def animate(i):
     axes.grid(which = "minor", linewidth = 0.2)
     axes.minorticks_on()
 
-    axes.set_ylim([-5,5]) # Set Y axis limit of plot
-    axes.set_title(f"pitch_unfiltered: {pitch}\npitch_filtered: {pitch_est}") # Set title of figure
+    axes.set_ylim([-5,10]) # Set Y axis limit of plot
+    axes.set_title(f"linear_acc_with_gravity: {az_lin_raw}\nlinear_acc_no gravity: {az_lin_est}") # Set title of figure
     axes.set_ylabel("angular pos (radians)") # Set title of y axis 
     axes.set_xlabel("number of data points") # Set title of z axis 
 
-    axes.legend(["unfiltered pitch", "filtered pitch"], loc ="upper right")
+    axes.legend(["unfiltered roll", "filtered roll"], loc ="upper right")
 
 
 
 
 
 
-portName = '/dev/ttyACM0'
+# portName = '/dev/ttyACM0'
+portName = '/dev/ttyUSB0'
 imuSer = IMUSerialComm(portName, 115200, 0.1)
 time.sleep(5)
 

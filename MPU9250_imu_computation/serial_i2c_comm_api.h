@@ -1,7 +1,7 @@
 #ifndef SERIAL_I2C_COMM_API_H
 #define SERIAL_I2C_COMM_API_H
 #include<Arduino.h>
-#include "global_eeprom_variables.h"
+#include "eeprom_setup.h"
 
 
 
@@ -32,76 +32,6 @@ void offLed(){
 ///////// DIFFERENT TASK FOR SERIAL AND I2C COMMUNICATION //////////
 
 /////////////////////////////////////////////////////////////////////////////////////
-String sendRawAccData(){
-  String data = String(axRaw, 4);
-  data += ",";
-  data += String(ayRaw, 4);
-  data += ",";
-  data += String(azRaw, 4);
-  return data;
-}
-
-String sendCalAccData(){
-  String data = String(axCal, 4);
-  data += ",";
-  data += String(ayCal, 4);
-  data += ",";
-  data += String(azCal, 4);
-  return data;
-}
-
-
-
-String sendRawGyroData(){
-  String data = String(gxRaw, 4);
-  data += ",";
-  data += String(gyRaw, 4);
-  data += ",";
-  data += String(gzRaw, 4);
-  return data;
-}
-
-String sendCalGyroData(){
-  String data = String(gxCal, 4);
-  data += ",";
-  data += String(gyCal, 4);
-  data += ",";
-  data += String(gzCal, 4);
-  return data;
-}
-
-
-
-
-String sendRawMagData(){
-  String data = String(mxRaw, 4);
-  data += ",";
-  data += String(myRaw, 4);
-  data += ",";
-  data += String(mzRaw, 4);
-  return data;
-}
-
-String sendCalMagData(){
-  String data = String(mxCal, 4);
-  data += ",";
-  data += String(myCal, 4);
-  data += ",";
-  data += String(mzCal, 4);
-  return data;
-}
-
-
-
-
-String sendRPY_deg(){
-  String data = String(roll_deg, 2);
-  data += ",";
-  data += String(pitch_deg, 2);
-  data += ",";
-  data += String(yaw_deg, 2);
-  return data;
-}
 
 String sendRPY_rad(){
   String data = String(roll, 4);
@@ -141,9 +71,26 @@ String sendQuternions(){
   data += String(qz, 4);
   return data;
 }
+
+
+String sendLinearAccelerationRaw(){
+  String data = String(axLin, 4);
+  data += ",";
+  data += String(ayLin, 4);
+  data += ",";
+  data += String(azLin, 4);
+  return data;
+}
+
+// String sendLinearAccelerationEst(){
+//   String data = String(lin_acc_x_est, 4);
+//   data += ",";
+//   data += String(lin_acc_y_est, 4);
+//   data += ",";
+//   data += String(lin_acc_z_est, 4);
+//   return data;
+// }
 ///////////////////////////////////////////////////////////////////////////////////////
-
-
 
 
 
@@ -187,49 +134,8 @@ void serialReceiveAndSendData() {
     if (serDataBuffer[0] != ""){
 
       /////////////// FUNCTION CALLS /////////////////////
-      if(serDataBuffer[0] == "acc-raw"){
-        ser_msg = sendRawAccData();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
 
-      else if(serDataBuffer[0] == "acc-cal"){
-        ser_msg = sendCalAccData();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-      
-      else if(serDataBuffer[0] == "gyro-raw"){
-        ser_msg = sendRawGyroData();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if(serDataBuffer[0] == "gyro-cal"){
-        ser_msg = sendCalGyroData();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if(serDataBuffer[0] == "mag-raw"){
-        ser_msg = sendRawMagData();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if(serDataBuffer[0] == "mag-cal"){
-        ser_msg = sendCalMagData();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if(serDataBuffer[0] == "rpy-deg"){
-        ser_msg = sendRPY_deg();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
-
-      else if(serDataBuffer[0] == "rpy-rad"){
+      if(serDataBuffer[0] == "rpy-rad"){
         ser_msg = sendRPY_rad();
         Serial.println(ser_msg);
         ser_msg = "";
@@ -252,6 +158,19 @@ void serialReceiveAndSendData() {
         Serial.println(ser_msg);
         ser_msg = "";
       }
+
+      else if(serDataBuffer[0] == "alin-raw"){
+        ser_msg = sendLinearAccelerationRaw();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      // else if(serDataBuffer[0] == "alin-est"){
+      //   ser_msg = sendLinearAccelerationEst();
+      //   Serial.println(ser_msg);
+      //   ser_msg = "";
+      // }
+
       ////////////////////////////////////////////////////
 
     } else {

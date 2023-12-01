@@ -1,67 +1,23 @@
-import sys
-import time
+#REFERENCE_1: https://teslabs.com/articles/magnetometer-calibration/
+#REFERENCE_2: https://learn.adafruit.com/adafruit-sensorlab-magnetometer-calibration/magnetic-calibration-with-jupyter
+
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import datetime
-import matplotlib.dates as mdates
-from collections import deque
 import numpy as np
 from scipy import linalg
 
+import time
+from imu_serial_comm_lib import IMUSerialComm
 
 
-import serial
+# portName = '/dev/ttyACM0'
+portName = '/dev/ttyUSB0'
+imuSer = IMUSerialComm(portName, 115200, 0.1)
+time.sleep(5)
 
-PORT = "/dev/ttyACM0"
 
 # How many sensor samples we want to store
 HISTORY_SIZE = 10000
-
-serialport = None
-
-
-def skip_data():
-    global serialport
-    if not serialport:
-        # open serial port
-        serialport = serial.Serial(PORT, 9600, timeout=2)
-        # check which port was really used
-        print("Opened", serialport.name)
-        # Flush input
-        #time.sleep(2)
-        serialport.readline()
-
-def get_mag_data():
-    global serialport
-    if not serialport:
-        # open serial port
-        serialport = serial.Serial(PORT, 9600, timeout=2)
-        # check which port was really used
-        print("Opened", serialport.name)
-        # Flush input
-        #time.sleep(2)
-        serialport.readline()
-
-    # Poll the serial port
-    line = str(serialport.readline(), 'utf-8')
-
-    data = line.split('\r\n')
-    data = data[0]
-    data = data.split(',')
-    
-    mx = float(data[6])
-    my = float(data[7])
-    mz = float(data[8])
-    
-    mag_data = []
-    mag_data.append(mx)
-    mag_data.append(my)
-    mag_data.append(mz)
-    
-    return mag_data
-
-
-
 
 
 b = np.zeros([3, 1])
@@ -102,12 +58,35 @@ def calibrate():
     M_1 = linalg.inv(M)
     b = -np.dot(M_1, n)
     A_1 = np.real(F / np.sqrt(np.dot(n.T, np.dot(M_1, n)) - d) * linalg.sqrtm(M))
+
+    ################################################
+    b_vect = [[0.0], [0.0], [0.0]]
+    A_mat = [[0.0, 0.0, 0.0],[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+
+    imuSer.send('bvect-x', b[0][0])
+    b_vect[0][0] = imuSer.get('bvect-x')
+
+    imuSer.send('bvect-y', b[1][0])
+    b_vect[1][0] = imuSer.get('bvect-y')
+
+    imuSer.send('bvect-z', b[2][0])
+    b_vect[2][0] = imuSer.get('bvect-z')
+
+    for i in range(3):
+      for j in range(3):
+        imuSer.send(f'amat-{i}{j}', A_1[i][j])
+        A_mat[i][j] = imuSer.get(f'amat-{i}{j}')
+    
+    
+    ################################################
     
     print()
     print("A_1 matrix:")
+    print(A_mat)
     print(A_1)
     print()
     print("b vector:")
+    print(b_vect)
     print(b)
 
 
@@ -189,9 +168,14 @@ def readCalData():
     s : list
     The sample in uT, [x,y,z] (corrected if performed calibration).
     '''
-    s = np.array(get_mag_data()).reshape(3, 1)
+
+    mx, my, mz = imuSer.get("mag-raw")
+    s = np.array([mx,my,mz]).reshape(3, 1)
     s = np.dot(A_1, s - b)
-    return [s[0,0], s[1,0], s[2,0]]
+    return s[0,0], s[1,0], s[2,0] #mxCal, myCal, mzCal
+
+    # mxCal, myCal, mzCal = imuSer.get("mag-cal")
+    # return mxCal, myCal, mzCal
 
 
 
@@ -222,14 +206,15 @@ def animate(i):
     global calibrated
     try:
         if calibrated == False:
-            magData = get_mag_data()
+            mx, my, mz = imuSer.get("mag-raw")
         else:
-            magData = readCalData()
+            # mx, my, mz = readCalData()
+            mx, my, mz = imuSer.get("mag-cal")
         
-        magArray.append(magData)
-        mag_x.append(magData[0])
-        mag_y.append(magData[1])
-        mag_z.append(magData[2])
+        magArray.append([mx,my,mz])
+        mag_x.append(mx)
+        mag_y.append(my)
+        mag_z.append(mz)
 
         # Clear all axis
         ax.cla()
@@ -248,10 +233,9 @@ def animate(i):
 
 
 
-for i in range(0, 10):
-    skip_data()
 
-fig.canvas.mpl_connect('button_press_event', onClick)    
-anim = FuncAnimation(fig, animate, frames = np.arange(0, 10000, 1), interval=10)
+if __name__ == "__main__":
+  fig.canvas.mpl_connect('button_press_event', onClick)    
+  anim = FuncAnimation(fig, animate, frames = np.arange(0, 10000, 1), interval=50)
 
-plt.show()
+  plt.show()

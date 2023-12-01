@@ -9,13 +9,14 @@ import time
 from imu_serial_comm_lib import IMUSerialComm
 
 
-portName = '/dev/ttyACM0'
+# portName = '/dev/ttyACM0'
+portName = '/dev/ttyUSB0'
 imuSer = IMUSerialComm(portName, 115200, 0.1)
 time.sleep(5)
 
 
 # How many sensor samples we want to store
-HISTORY_SIZE = 1500
+HISTORY_SIZE = 1000
 
 serialport = None
 
@@ -30,7 +31,7 @@ def run_caliberation():
     count = 0
     while len(gyro_x) < HISTORY_SIZE:
         try:
-            gx, gy, gz = imuSer.get("gRaw")
+            gx, gy, gz = imuSer.get("gyro-raw")
 
             gyro_x.append(gx)
             gyro_y.append(gy)
@@ -50,8 +51,20 @@ def run_caliberation():
     min_z = min(gyro_z)
     max_z = max(gyro_z)
 
+    gx_offset = (max_x + min_x) / 2
+    gy_offset = (max_y + min_y) / 2
+    gz_offset = (max_z + min_z) / 2
 
-    gyro_calibration = [ (max_x + min_x) / 2, (max_y + min_y) / 2, (max_z + min_z) / 2]
+    imuSer.send('gx-off', gx_offset)
+    gx_offset = imuSer.get('gx-off')
+
+    imuSer.send('gy-off', gy_offset)
+    gy_offset = imuSer.get('gy-off')
+
+    imuSer.send('gz-off', gz_offset)
+    gz_offset = imuSer.get('gz-off')
+
+    gyro_calibration = [ gx_offset, gy_offset, gz_offset]
     print("computed gyro offsets in rad/s:", gyro_calibration)
 
 

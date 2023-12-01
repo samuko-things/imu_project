@@ -6,12 +6,13 @@ import time
 from imu_serial_comm_lib import IMUSerialComm
 
 
-portName = '/dev/ttyACM0'
+# portName = '/dev/ttyACM0'
+portName = '/dev/ttyUSB0'
 imuSer = IMUSerialComm(portName, 115200, 0.1)
 time.sleep(5)
 
 # How many sensor samples we want to store
-HISTORY_SIZE = 1500
+HISTORY_SIZE = 1000
 
 serialport = None
 
@@ -36,7 +37,7 @@ def run_caliberation():
     count = 0
     while len(acc_x) < HISTORY_SIZE:
         try:
-            ax, ay, az = imuSer.get("aRaw")
+            ax, ay, az = imuSer.get("acc-raw")
 
             acc_x.append(ax)
             acc_y.append(ay)
@@ -48,8 +49,21 @@ def run_caliberation():
         except:
             pass
 
-    acc_calibration = [ average(acc_x), average(acc_y), (average(acc_z) + 9.8)]
-    print("computed acc offsets in g:", acc_calibration)
+    ax_offset = average(acc_x)
+    ay_offset = average(acc_y)
+    az_offset = (average(acc_z) - 9.8)
+
+    imuSer.send('ax-off', ax_offset)
+    ax_offset = imuSer.get('ax-off')
+
+    imuSer.send('ay-off', ay_offset)
+    ay_offset = imuSer.get('ay-off')
+
+    imuSer.send('az-off', az_offset)
+    az_offset = imuSer.get('az-off')
+
+    acc_calibration = [ ax_offset, ay_offset, az_offset]
+    print("computed acc offsets in m/s^2:", acc_calibration)
 
 
     fig, (uncal, cal) = plt.subplots(nrows=2)
