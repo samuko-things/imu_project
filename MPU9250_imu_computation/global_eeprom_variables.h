@@ -1,8 +1,6 @@
 #ifndef GLOBAL_EEPROM_VARIABLES
 #define GLOBAL_EEPROM_VARIABLES
 
-// #include "low_pass_filter_setup.h"
-
 
 ///////////////////////////////////////////////////
 float axRaw = 0.00;
@@ -20,26 +18,9 @@ float azOff = 0.00;
 float acc_vect[3];
 float acc_vect_norm[3];
 
-float linear_acc_vect[3];
-
-float axLin = 0.00;
-float ayLin = 0.00;
-float azLin = 0.00;
-
-// float lin_acc_x_est;
-// float lin_acc_y_est;
-// float lin_acc_z_est;
-
-float gravity_acc_vect[3] = {0.00, 0.00, 9.8};
-
-// adaptive lowpass Filter
-// int order = 2;
-// float cutOffFreq = 1.5;
-
-// // Filter instance
-// AdaptiveLowPassFilter axLinFilter(order, cutOffFreq);
-// AdaptiveLowPassFilter ayLinFilter(order, cutOffFreq);
-// AdaptiveLowPassFilter azLinFilter(order, cutOffFreq);
+float accx_variance = 0.00;
+float accy_variance = 0.00;
+float accz_variance = 0.00;
 ////////////////////////////////////////////////////
 
 
@@ -86,9 +67,10 @@ float roll_rate, pitch_rate, yaw_rate;
 float north[3], west[3], up[3];
 float northCorrect[3];
 
-float new_yaw_deg, ref_yaw_deg;
+float new_yaw_deg=0.00, ref_yaw_deg=0.00;
 bool startYawRefAngle = true;
 int count;
+float heading=0.00, heading_deg=0.00;
 //////////////////////////////////////////////////////////////////////
 
 
@@ -100,7 +82,7 @@ float roll_rate_bias_est = 0.00;
 float P_roll[2][2]; // roll_est and bias uncertainty matrix
 float S_roll = 0.00;
 float K_roll[2]; // kalman gain for roll_est and roll_rate_bias_est respectively
-float Q_roll = 0.00; // roll rate gyro bias process noise
+float Q_roll = 0.00; // roll rate gyro bias process noise (i.e gyroX rate variance)
 float R_roll = 0.00; // roll angle measurement variance
 
 float old_roll = 0.00;
@@ -149,10 +131,10 @@ void rollKalmanFilter(float roll_rate_measurement, float roll_angle_measurement)
 float pitch_est = 0.000;
 float pitch_rate_bias_est = 0.00;
 
-float P_pitch[2][2]; // pitch_est and bias uncertainty matrix
+float P_pitch[2][2]; // pitch_est and bias uncertainty matrix(i.e gyroX rate variance)
 float S_pitch = 0.00;
 float K_pitch[2]; // kalman gain for pitch_est and pitch_rate_bias_est respectively
-float Q_pitch = 0.00; // pitch rate gyro bias process noise
+float Q_pitch = 0.00; // pitch rate gyro bias process noise (i.e gyroY rate variance)
 float R_pitch = 0.00; // pitch angle measurement variance
 
 float old_pitch=0.00;
@@ -202,7 +184,7 @@ float yaw_rate_bias_est = 0.00;
 float P_yaw[2][2]; // yaw_est and bias uncertainty matrix
 float S_yaw = 0.00;
 float K_yaw[2]; // kalman gain for yaw_est and yaw_rate_bias_est respectively
-float Q_yaw = 0.00; // yaw rate gyro bias process noise
+float Q_yaw = 0.00; // yaw rate gyro bias process noise (i.e gyroZ rate variance)
 float R_yaw = 0.00; // yaw angle measurement variance
 
 float old_yaw=0.00;
@@ -247,6 +229,7 @@ void yawKalmanFilter(float yaw_rate_measurement, float yaw_angle_measurement){
 
 ////////////////////////////////////////////////////////////////////////////
 float qw=0.00, qx=0.00, qy=0.00, qz=0.00;
+float qwh=0.00, qxh=0.00, qyh=0.00, qzh=0.00;
 ////////////////////////////////////////////////////////////////////////////
 
 

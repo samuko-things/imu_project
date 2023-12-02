@@ -7,41 +7,43 @@
 #include <EEPROM.h>
 #include "global_eeprom_variables.h"
 
-byte FIRST_TIME_ADDRESS = 0;
+int FIRST_TIME_ADDRESS = 0;
 
-byte AX_OFFSET_ADDRESS = 4;
-byte AY_OFFSET_ADDRESS = 8;
-byte AZ_OFFSET_ADDRESS = 12;
+int AX_OFFSET_ADDRESS = 4;
+int AY_OFFSET_ADDRESS = 8;
+int AZ_OFFSET_ADDRESS = 12;
 
-byte GX_OFFSET_ADDRESS = 16;
-byte GY_OFFSET_ADDRESS = 20;
-byte GZ_OFFSET_ADDRESS = 24;
+int GX_OFFSET_ADDRESS = 16;
+int GY_OFFSET_ADDRESS = 20;
+int GZ_OFFSET_ADDRESS = 24;
 
-byte B_VECT_X_ADDRESS = 28;
-byte B_VECT_Y_ADDRESS = 32;
-byte B_VECT_Z_ADDRESS = 36;
+int B_VECT_X_ADDRESS = 28;
+int B_VECT_Y_ADDRESS = 32;
+int B_VECT_Z_ADDRESS = 36;
 
-byte A_MAT_00_ADDRESS = 40;
-byte A_MAT_01_ADDRESS = 44;
-byte A_MAT_02_ADDRESS = 48;
+int A_MAT_00_ADDRESS = 40;
+int A_MAT_01_ADDRESS = 44;
+int A_MAT_02_ADDRESS = 48;
 
-byte A_MAT_10_ADDRESS = 52;
-byte A_MAT_11_ADDRESS = 56;
-byte A_MAT_12_ADDRESS = 60;
+int A_MAT_10_ADDRESS = 52;
+int A_MAT_11_ADDRESS = 56;
+int A_MAT_12_ADDRESS = 60;
 
-byte A_MAT_20_ADDRESS = 64;
-byte A_MAT_21_ADDRESS = 68;
-byte A_MAT_22_ADDRESS = 72;
+int A_MAT_20_ADDRESS = 64;
+int A_MAT_21_ADDRESS = 68;
+int A_MAT_22_ADDRESS = 72;
 
-byte ROLL_ANGLE_VAR_ADDRESS = 76;
-byte PITCH_ANGLE_VAR_ADDRESS = 80;
-byte YAW_ANGLE_VAR_ADDRESS = 84;
+int ROLL_ANGLE_VAR_ADDRESS = 76;
+int PITCH_ANGLE_VAR_ADDRESS = 80;
+int YAW_ANGLE_VAR_ADDRESS = 84;
 
-byte ROLL_RATE_VAR_ADDRESS = 88;
-byte PITCH_RATE_VAR_ADDRESS = 92;
-byte YAW_RATE_VAR_ADDRESS = 96;
+int ROLL_RATE_VAR_ADDRESS = 88;
+int PITCH_RATE_VAR_ADDRESS = 92;
+int YAW_RATE_VAR_ADDRESS = 96;
 
-
+int ACC_X_VAR_ADDRESS = 100;
+int ACC_Y_VAR_ADDRESS = 104;
+int ACC_Z_VAR_ADDRESS = 108;
 
 
 
@@ -349,6 +351,40 @@ void setYawRateVariance(float yawRateVariance){
 
 
 
+//////////////////////////////////////////////////////////////
+float getAccxVariance(){
+  float accxVariance;
+  EEPROM.get(ACC_X_VAR_ADDRESS, accxVariance);
+  return accxVariance;
+}
+void setAccxVariance(float accxVariance){
+  EEPROM.put(ACC_X_VAR_ADDRESS, accxVariance);
+  accx_variance = getAccxVariance();
+}
+
+float getAccyVariance(){
+  float accyVariance;
+  EEPROM.get(ACC_Y_VAR_ADDRESS, accyVariance);
+  return accyVariance;
+}
+void setAccyVariance(float accyVariance){
+  EEPROM.put(ACC_Y_VAR_ADDRESS, accyVariance);
+  accy_variance = getAccyVariance();
+}
+
+float getAcczVariance(){
+  float acczVariance;
+  EEPROM.get(ACC_Z_VAR_ADDRESS, acczVariance);
+  return acczVariance;
+}
+void setAcczVariance(float acczVariance){
+  EEPROM.put(ACC_Z_VAR_ADDRESS, acczVariance);
+  accz_variance = getAcczVariance();
+}
+//////////////////////////////////////////////////////////////
+
+
+
 /////////////////////////////////////////
 // int getI2CADDRESS(){
 //   float address;
@@ -426,6 +462,10 @@ void resetAllParams(){
   setPitchRateVariance(0.00);
   setYawRateVariance(0.00);
 
+  setAccxVariance(0.00);
+  setAccyVariance(0.00);
+  setAcczVariance(0.00);
+
 }
 
 
@@ -476,6 +516,10 @@ void updateGlobalParamsFromEERPOM(){
   Q_roll = getRollRateVariance();
   Q_pitch = getPitchRateVariance();
   Q_yaw = getYawRateVariance();
+
+  accx_variance = getAccxVariance();
+  accy_variance = getAccyVariance();
+  accz_variance = getAcczVariance();
 }
 /////////////////////////////////////////////////////////////
 

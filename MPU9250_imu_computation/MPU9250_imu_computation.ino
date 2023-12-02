@@ -27,33 +27,17 @@
 bfs::Mpu9250 imu;
 
 unsigned long serialCommTime, serialCommSampleTime = 10;  // ms -> (1000/sampleTime) hz
-unsigned long readImuTime, readImuSampleTime = 5; // ms -> (1000/sampleTime) hz
-
-
-// void accFilterInit(){
-//   axLinFilter.setOrder(order);
-//   axLinFilter.setCutOffFreq(cutOffFreq);
-
-//   ayLinFilter.setOrder(order);
-//   ayLinFilter.setCutOffFreq(cutOffFreq);
-
-//   azLinFilter.setOrder(order);
-//   azLinFilter.setCutOffFreq(cutOffFreq);
-// }
-
-
-
-
+unsigned long readImuTime, readImuSampleTime = 2; // ms -> (1000/sampleTime) hz
 
 
 
 void setup() {
- initLed();
-  offLed();
-
   /* Serial to display data */
   Serial.begin(115200);
   Serial.setTimeout(2);
+
+  initLed();
+  offLed();
 
   //---------------- START IMU IN SPI MODE -----------------------//
   /* Start the SPI bus */
@@ -102,7 +86,6 @@ void setup() {
   updateGlobalParamsFromEERPOM();
   /////////////////////////////////////////////
 
-  delay(500);
   onLed();
   delay(1000);
   offLed();
@@ -111,8 +94,7 @@ void setup() {
   delay(1000);
   offLed();
 
-
-  // accFilterInit();
+  ref_yaw_deg = 0.00;
 
   serialCommTime = millis();
   readImuTime = millis();
@@ -257,12 +239,12 @@ void loop() {
       //---------------- ADD ZERO REFEFENCE ANGLE FOR YAW ----------------------------//
 
       if (startYawRefAngle){
-        ref_yaw_deg = yaw_deg;
-        if(count >= 50){
+        ref_yaw_deg = 0.00;
+        if(count >= 200){
+          ref_yaw_deg = yaw_deg;
           startYawRefAngle = false;
         }
         else count += 1;
-        
       }
 
       if ((ref_yaw_deg >= 0) && ((-180+ref_yaw_deg)>=yaw_deg)&&(yaw_deg>=-180)){
@@ -281,6 +263,7 @@ void loop() {
       //-----------------------//
       roll = roll_deg * PI / 180.0;
       pitch = pitch_deg * PI / 180.0;
+      // yaw = yaw_deg * PI / 180.0;
       yaw = new_yaw_deg * PI / 180.0;
       //-----------------------//
 
@@ -299,7 +282,7 @@ void loop() {
     yawKalmanFilter(yaw_rate, yaw);
     //--------------------------------------------------------------------//
 
-    //------- CONVERT FILTERED RPY TO QUATERNIONS -----------------------//
+    //------- CONVERT FILTERED RPY TO QUATERNIONS WITH ZERO REFERENCE YAW-----------------------//
     qx = ( sin(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
     qy = ( cos(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) );
     qz = ( cos(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) ) - ( sin(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) );
@@ -307,43 +290,29 @@ void loop() {
     // -------------------------------------------------------------------//
 
 
-    //---------- compute linear acceleration in inertia frame ----------- //
-    
-    float Rroll_1[3][3] = {
-      {1, 0, 0},
-      {0, cos(roll_est), (-1 * sin(roll_est))},
-      {0, sin(roll_est), cos(roll_est)},
-    };
+    //---------------- GET BACK HEADINGS HEADING ----------------------------//
+    heading_deg = degrees(yaw_est)+ref_yaw_deg;
 
-    float Rpitch_1[3][3] = {
-      {cos(pitch_est), 0, sin(pitch_est)},
-      {0, 1, 0},
-      {(-1 * sin(pitch_est)), 0, cos(pitch_est)},
-    };
-
-    float Ryaw_1[3][3] = {
-      {cos(yaw_est), (-1*sin(yaw_est)), 0},
-      {sin(yaw_est), cos(yaw_est), 0},
-      {0, 0, 1},
-    };
-
-    linear_acc_vect[0] = acc_vect[0];
-    linear_acc_vect[1] = acc_vect[1];
-    linear_acc_vect[2] = acc_vect[2];
-
-    vectOp.transform(linear_acc_vect, Rroll_1, linear_acc_vect);
-    vectOp.transform(linear_acc_vect, Rpitch_1, linear_acc_vect);
-    vectOp.transform(linear_acc_vect, Ryaw_1, linear_acc_vect);
-
-    axLin = linear_acc_vect[0]-gravity_acc_vect[0];
-    ayLin = linear_acc_vect[1]-gravity_acc_vect[1];
-    azLin = linear_acc_vect[2]-gravity_acc_vect[2];
-
-    // lin_acc_x_est = axLinFilter.filt(axLin);
-    // lin_acc_y_est = ayLinFilter.filt(ayLin);
-    // lin_acc_z_est = azLinFilter.filt(azLin);
-
+    if ((ref_yaw_deg >= 0) && (heading_deg>180)){
+      heading_deg = heading_deg - 360.00;
+      heading = radians(heading_deg);
+    }
+    else if ((ref_yaw_deg < 0) && (heading_deg<-180)){
+      heading_deg = heading_deg + 360.00;
+      heading = radians(heading_deg);
+    }
+    else {
+      heading = radians(heading_deg);
+    }
     //------------------------------------------------------------------------------//
+
+
+    //------- CONVERT FILTERED RPY TO QUATERNIONS WITH YAW HEADING-----------------------//
+    qxh = ( sin(roll_est/2) * cos(pitch_est/2) * cos(heading/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(heading/2) );
+    qyh = ( cos(roll_est/2) * sin(pitch_est/2) * cos(heading/2) ) + ( sin(roll_est/2) * cos(pitch_est/2) * sin(heading/2) );
+    qzh = ( cos(roll_est/2) * cos(pitch_est/2) * sin(heading/2) ) - ( sin(roll_est/2) * sin(pitch_est/2) * cos(heading/2) );
+    qwh = ( cos(roll_est/2) * cos(pitch_est/2) * cos(heading/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(heading/2) );
+    // -------------------------------------------------------------------//
 
 
     readImuTime = millis();

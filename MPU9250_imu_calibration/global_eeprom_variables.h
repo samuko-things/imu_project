@@ -18,6 +18,10 @@ float azOff = 0.00;
 float acc_vect[3];
 float acc_vect_norm[3];
 
+float accx_variance = 0.00;
+float accy_variance = 0.00;
+float accz_variance = 0.00;
+
 ////////////////////////////////////////////////////
 
 
@@ -70,14 +74,14 @@ float northCorrect[3];
 
 //////////////////////////////////////////////////////////////////////
 
-float Q_roll = 0.00; // roll rate gyro bias process noise
+float Q_roll = 0.00; // roll rate gyro bias process noise i.e gyrox variance
 float R_roll = 0.00; // roll angle measurement variance
 ////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////
 
-float Q_pitch = 0.00; // pitch rate gyro bias process noise
+float Q_pitch = 0.00; // pitch rate gyro bias process noise i.e gyroy variance
 float R_pitch = 0.00; // pitch angle measurement variance
 
 ////////////////////////////////////////////////////////////////////////////
@@ -85,7 +89,7 @@ float R_pitch = 0.00; // pitch angle measurement variance
 
 
 //////////////////////////////////////////////////////////////////////
-float Q_yaw = 0.00; // yaw rate gyro bias process noise
+float Q_yaw = 0.00; // yaw rate gyro bias process noise i.e gyroz variance
 float R_yaw = 0.00; // yaw angle measurement variance
 ////////////////////////////////////////////////////////////////////////////
 
