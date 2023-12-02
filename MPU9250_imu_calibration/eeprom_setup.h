@@ -41,6 +41,10 @@ int ROLL_RATE_VAR_ADDRESS = 88;
 int PITCH_RATE_VAR_ADDRESS = 92;
 int YAW_RATE_VAR_ADDRESS = 96;
 
+int ACC_X_VAR_ADDRESS = 100;
+int ACC_Y_VAR_ADDRESS = 104;
+int ACC_Z_VAR_ADDRESS = 108;
+
 
 
 
@@ -349,6 +353,43 @@ void setYawRateVariance(float yawRateVariance){
 
 
 
+//////////////////////////////////////////////////////////////
+float getAccxVariance(){
+  float accxVariance;
+  EEPROM.get(ACC_X_VAR_ADDRESS, accxVariance);
+  return accxVariance;
+}
+void setAccxVariance(float accxVariance){
+  EEPROM.put(ACC_X_VAR_ADDRESS, accxVariance);
+  accx_variance = getAccxVariance();
+}
+
+float getAccyVariance(){
+  float accyVariance;
+  EEPROM.get(ACC_Y_VAR_ADDRESS, accyVariance);
+  return accyVariance;
+}
+void setAccyVariance(float accyVariance){
+  EEPROM.put(ACC_Y_VAR_ADDRESS, accyVariance);
+  accy_variance = getAccyVariance();
+}
+
+float getAcczVariance(){
+  float acczVariance;
+  EEPROM.get(ACC_Z_VAR_ADDRESS, acczVariance);
+  return acczVariance;
+}
+void setAcczVariance(float acczVariance){
+  EEPROM.put(ACC_Z_VAR_ADDRESS, acczVariance);
+  accz_variance = getAcczVariance();
+}
+//////////////////////////////////////////////////////////////
+
+
+
+
+
+
 /////////////////////////////////////////
 // int getI2CADDRESS(){
 //   float address;
@@ -426,6 +467,10 @@ void resetAllParams(){
   setPitchRateVariance(0.00);
   setYawRateVariance(0.00);
 
+  setAccxVariance(0.00);
+  setAccyVariance(0.00);
+  setAcczVariance(0.00);
+
 }
 
 
@@ -476,6 +521,10 @@ void updateGlobalParamsFromEERPOM(){
   Q_roll = getRollRateVariance();
   Q_pitch = getPitchRateVariance();
   Q_yaw = getYawRateVariance();
+
+  accx_variance = getAccxVariance();
+  accy_variance = getAccyVariance();
+  accz_variance = getAcczVariance();
 }
 /////////////////////////////////////////////////////////////
 

@@ -91,24 +91,65 @@ String sendQuternions(){
 }
 
 
-String sendLinearAccelerationRaw(){
-  String data = String(axLin, 4);
+String sendQuternions_with_heading(){
+  String data = String(qwh, 4);
   data += ",";
-  data += String(ayLin, 4);
+  data += String(qxh, 4);
   data += ",";
-  data += String(azLin, 4);
+  data += String(qyh, 4);
+  data += ",";
+  data += String(qzh, 4);
   return data;
 }
-
-// String sendLinearAccelerationEst(){
-//   String data = String(lin_acc_x_est, 4);
-//   data += ",";
-//   data += String(lin_acc_y_est, 4);
-//   data += ",";
-//   data += String(lin_acc_z_est, 4);
-//   return data;
-// }
 ///////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+///////////////////////////////////////////////////////////////////
+String sendRollAngleVariance(){
+  return String(R_roll,10);
+}
+
+String sendPitchAngleVariance(){
+  return String(R_pitch,10);
+}
+
+String sendYawAngleVariance(){
+  return String(R_yaw,10);
+}
+//////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////
+String sendRollRateVariance(){
+  return String(Q_roll,10);
+}
+
+String sendPitchRateVariance(){
+  return String(Q_pitch,10);
+}
+
+String sendYawRateVariance(){
+  return String(Q_yaw,10);
+}
+//////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////
+String sendAccxVariance(){
+  return String(accx_variance,10);
+}
+
+String sendAccyVariance(){
+  return String(accy_variance,10);
+}
+
+String sendAcczVariance(){
+  return String(accz_variance,10);
+}
+////////////////////////////////////////////////////////////////////
+
 
 
 
@@ -189,17 +230,65 @@ void serialReceiveAndSendData() {
         ser_msg = "";
       }
 
-      else if(serDataBuffer[0] == "alin-raw"){
-        ser_msg = sendLinearAccelerationRaw();
+      else if(serDataBuffer[0] == "quath"){
+        ser_msg = sendQuternions_with_heading();
         Serial.println(ser_msg);
         ser_msg = "";
       }
 
-      // else if(serDataBuffer[0] == "alin-est"){
-      //   ser_msg = sendLinearAccelerationEst();
-      //   Serial.println(ser_msg);
-      //   ser_msg = "";
-      // }
+      else if (serDataBuffer[0] == "rAng-var") {
+        ser_msg = sendRollAngleVariance();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if (serDataBuffer[0] == "rRate-var") {
+        ser_msg = sendRollRateVariance();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if (serDataBuffer[0] == "pAng-var") {
+        ser_msg = sendPitchAngleVariance();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if (serDataBuffer[0] == "pRate-var") {
+        ser_msg = sendPitchRateVariance();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if (serDataBuffer[0] == "yAng-var") {
+        ser_msg = sendYawAngleVariance();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if (serDataBuffer[0] == "yRate-var") {
+        ser_msg = sendYawRateVariance();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if (serDataBuffer[0] == "accx-var") {
+        ser_msg = sendAccxVariance();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if (serDataBuffer[0] == "accy-var") {
+        ser_msg = sendAccyVariance();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if (serDataBuffer[0] == "accz-var") {
+        ser_msg = sendAcczVariance();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
 
       ////////////////////////////////////////////////////
 

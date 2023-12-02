@@ -389,6 +389,36 @@ String sendYawRateVariance(){
 //////////////////////////////////////////////////////////////////
 
 
+//////////////////////////////////////////////////////////////////
+String updateAccxVariance(float accxVariance){
+  setAccxVariance(accxVariance);
+  accx_variance = getAccxVariance();
+  return "1";
+}
+String sendAccxVariance(){
+  return String(accx_variance,10);
+}
+
+String updateAccyVariance(float accyVariance){
+  setAccyVariance(accyVariance);
+  accy_variance = getAccyVariance();
+  return "1";
+}
+String sendAccyVariance(){
+  return String(accy_variance,10);
+}
+
+String updateAcczVariance(float acczVariance){
+  setAcczVariance(acczVariance);
+  accz_variance = getAcczVariance();
+  return "1";
+}
+String sendAcczVariance(){
+  return String(accz_variance,10);
+}
+////////////////////////////////////////////////////////////////////
+
+
 
 
 
@@ -666,6 +696,27 @@ void serialReceiveAndSendData() {
       else if (serDataBuffer[0] == "yRate-var") {
         if (serDataBuffer[1]=="") ser_msg = sendYawRateVariance();
         else ser_msg = updateYawRateVariance(serDataBuffer[1].toFloat());
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if (serDataBuffer[0] == "accx-var") {
+        if (serDataBuffer[1]=="") ser_msg = sendAccxVariance();
+        else ser_msg = updateAccxVariance(serDataBuffer[1].toFloat());
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if (serDataBuffer[0] == "accy-var") {
+        if (serDataBuffer[1]=="") ser_msg = sendAccyVariance();
+        else ser_msg = updateAccyVariance(serDataBuffer[1].toFloat());
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if (serDataBuffer[0] == "accz-var") {
+        if (serDataBuffer[1]=="") ser_msg = sendAcczVariance();
+        else ser_msg = updateAcczVariance(serDataBuffer[1].toFloat());
         Serial.println(ser_msg);
         ser_msg = "";
       }

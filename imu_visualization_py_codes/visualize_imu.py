@@ -70,12 +70,14 @@ myBox.opacity = 0.3
 myObj = compound([myBox])
 
 while True:
-  roll, pitch, yaw = imuSer.get('rpy-est') #est without heading
+  # roll, pitch, yaw = imuSer.get('rpy-est') #est without heading
 
   # roll, pitch, yaw = imuSer.get('rpy-esth') #est with heading
   
-  # qw, qx, qy, qz = imuSer.get('quat')
-  # roll, pitch, yaw = euler_from_quaternion(qx, qy, qz, qw)
+  qw, qx, qy, qz = imuSer.get('quat') #est without heading
+  # qw, qx, qy, qz = imuSer.get('quath') #est with heading
+
+  roll, pitch, yaw = euler_from_quaternion(qx, qy, qz, qw)
 
   print(roll, pitch, m.degrees(yaw))
 

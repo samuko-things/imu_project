@@ -30,22 +30,6 @@ unsigned long serialCommTime, serialCommSampleTime = 10;  // ms -> (1000/sampleT
 unsigned long readImuTime, readImuSampleTime = 2; // ms -> (1000/sampleTime) hz
 
 
-// void accFilterInit(){
-//   axLinFilter.setOrder(order);
-//   axLinFilter.setCutOffFreq(cutOffFreq);
-
-//   ayLinFilter.setOrder(order);
-//   ayLinFilter.setCutOffFreq(cutOffFreq);
-
-//   azLinFilter.setOrder(order);
-//   azLinFilter.setCutOffFreq(cutOffFreq);
-// }
-
-
-
-
-
-
 
 void setup() {
   /* Serial to display data */
@@ -102,7 +86,6 @@ void setup() {
   updateGlobalParamsFromEERPOM();
   /////////////////////////////////////////////
 
-  delay(500);
   onLed();
   delay(1000);
   offLed();
@@ -112,9 +95,6 @@ void setup() {
   offLed();
 
   ref_yaw_deg = 0.00;
-
-
-  // accFilterInit();
 
   serialCommTime = millis();
   readImuTime = millis();
@@ -265,7 +245,6 @@ void loop() {
           startYawRefAngle = false;
         }
         else count += 1;
-        
       }
 
       if ((ref_yaw_deg >= 0) && ((-180+ref_yaw_deg)>=yaw_deg)&&(yaw_deg>=-180)){
@@ -303,51 +282,12 @@ void loop() {
     yawKalmanFilter(yaw_rate, yaw);
     //--------------------------------------------------------------------//
 
-    //------- CONVERT FILTERED RPY TO QUATERNIONS -----------------------//
+    //------- CONVERT FILTERED RPY TO QUATERNIONS WITH ZERO REFERENCE YAW-----------------------//
     qx = ( sin(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
     qy = ( cos(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) );
     qz = ( cos(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) ) - ( sin(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) );
     qw = ( cos(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
     // -------------------------------------------------------------------//
-
-
-    //---------- compute linear acceleration in inertia frame ----------- //
-    
-    float Rroll_1[3][3] = {
-      {1, 0, 0},
-      {0, cos(roll_est), (-1 * sin(roll_est))},
-      {0, sin(roll_est), cos(roll_est)},
-    };
-
-    float Rpitch_1[3][3] = {
-      {cos(pitch_est), 0, sin(pitch_est)},
-      {0, 1, 0},
-      {(-1 * sin(pitch_est)), 0, cos(pitch_est)},
-    };
-
-    float Ryaw_1[3][3] = {
-      {cos(yaw_est), (-1*sin(yaw_est)), 0},
-      {sin(yaw_est), cos(yaw_est), 0},
-      {0, 0, 1},
-    };
-
-    linear_acc_vect[0] = acc_vect[0];
-    linear_acc_vect[1] = acc_vect[1];
-    linear_acc_vect[2] = acc_vect[2];
-
-    vectOp.transform(linear_acc_vect, Rroll_1, linear_acc_vect);
-    vectOp.transform(linear_acc_vect, Rpitch_1, linear_acc_vect);
-    vectOp.transform(linear_acc_vect, Ryaw_1, linear_acc_vect);
-
-    axLin = linear_acc_vect[0]-gravity_acc_vect[0];
-    ayLin = linear_acc_vect[1]-gravity_acc_vect[1];
-    azLin = linear_acc_vect[2]-gravity_acc_vect[2];
-
-    // lin_acc_x_est = axLinFilter.filt(axLin);
-    // lin_acc_y_est = ayLinFilter.filt(ayLin);
-    // lin_acc_z_est = azLinFilter.filt(azLin);
-
-    //------------------------------------------------------------------------------//
 
 
     //---------------- GET BACK HEADINGS HEADING ----------------------------//
@@ -365,6 +305,14 @@ void loop() {
       heading = radians(heading_deg);
     }
     //------------------------------------------------------------------------------//
+
+
+    //------- CONVERT FILTERED RPY TO QUATERNIONS WITH YAW HEADING-----------------------//
+    qxh = ( sin(roll_est/2) * cos(pitch_est/2) * cos(heading/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(heading/2) );
+    qyh = ( cos(roll_est/2) * sin(pitch_est/2) * cos(heading/2) ) + ( sin(roll_est/2) * cos(pitch_est/2) * sin(heading/2) );
+    qzh = ( cos(roll_est/2) * cos(pitch_est/2) * sin(heading/2) ) - ( sin(roll_est/2) * sin(pitch_est/2) * cos(heading/2) );
+    qwh = ( cos(roll_est/2) * cos(pitch_est/2) * cos(heading/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(heading/2) );
+    // -------------------------------------------------------------------//
 
 
     readImuTime = millis();
