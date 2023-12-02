@@ -64,8 +64,14 @@ float mag_vect_norm[3];
 float roll, pitch, yaw;
 float roll_deg, pitch_deg, yaw_deg;
 float roll_rate, pitch_rate, yaw_rate;
-float north[3], west[3], up[3];
-float northCorrect[3];
+
+// inertia NWU frame
+float N[3] = {1.0, 0.0, 0.0};
+float W[3] = {0.0, 1.0, 0.0};
+float U[3] = {0.0, 0.0, 1.0};
+
+// sensor body NWU frame
+float n[3], w[3], u[3];
 
 float new_yaw_deg=0.00, ref_yaw_deg=0.00;
 bool startYawRefAngle = true;
