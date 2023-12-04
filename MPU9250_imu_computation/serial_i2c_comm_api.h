@@ -34,45 +34,45 @@ void offLed(){
 /////////////////////////////////////////////////////////////////////////////////////
 
 String sendRPY_rad(){
-  String data = String(roll, 4);
+  String data = String(roll, 8);
   data += ",";
-  data += String(pitch, 4);
+  data += String(pitch, 8);
   data += ",";
-  data += String(yaw, 4);
+  data += String(yaw, 8);
   return data;
 }
 
 String sendRPY_rate(){
-  String data = String(roll_rate, 4);
+  String data = String(roll_rate, 8);
   data += ",";
-  data += String(pitch_rate, 4);
+  data += String(pitch_rate, 8);
   data += ",";
-  data += String(yaw_rate, 4);
+  data += String(yaw_rate, 8);
   return data;
 }
 
 
 String sendRPY_est(){
-  String data = String(roll_est, 4);
+  String data = String(roll_est, 8);
   data += ",";
-  data += String(pitch_est, 4);
+  data += String(pitch_est, 8);
   data += ",";
-  data += String(yaw_est, 4);
+  data += String(yaw_est, 8);
   return data;
 }
 
 
 String sendRPY_est_with_heading(){
-  String data = String(roll_est, 4);
+  String data = String(roll_est, 8);
   data += ",";
-  data += String(pitch_est, 4);
+  data += String(pitch_est, 8);
   data += ",";
-  data += String(heading, 4);
+  data += String(heading, 8);
   return data;
 }
 
 String send_heading(){
-  String data = String(heading, 4);
+  String data = String(heading, 8);
   data += ",";
   data += String(heading_deg, 2);
   return data;
@@ -80,25 +80,34 @@ String send_heading(){
 
 
 String sendQuternions(){
-  String data = String(qw, 4);
+  String data = String(qw, 8);
   data += ",";
-  data += String(qx, 4);
+  data += String(qx, 8);
   data += ",";
-  data += String(qy, 4);
+  data += String(qy, 8);
   data += ",";
-  data += String(qz, 4);
+  data += String(qz, 8);
   return data;
 }
 
 
 String sendQuternions_with_heading(){
-  String data = String(qwh, 4);
+  String data = String(qwh, 8);
   data += ",";
-  data += String(qxh, 4);
+  data += String(qxh, 8);
   data += ",";
-  data += String(qyh, 4);
+  data += String(qyh, 8);
   data += ",";
-  data += String(qzh, 4);
+  data += String(qzh, 8);
+  return data;
+}
+
+String sendAccelerations(){
+  String data = String(axCal, 8);
+  data += ",";
+  data += String(ayCal, 8);
+  data += ",";
+  data += String(azCal, 8);
   return data;
 }
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -232,6 +241,12 @@ void serialReceiveAndSendData() {
 
       else if(serDataBuffer[0] == "quath"){
         ser_msg = sendQuternions_with_heading();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if(serDataBuffer[0] == "acc-cal"){
+        ser_msg = sendAccelerations();
         Serial.println(ser_msg);
         ser_msg = "";
       }
