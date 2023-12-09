@@ -289,6 +289,48 @@ void loop() {
     qw = ( cos(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
     // -------------------------------------------------------------------//
 
+    //---------- compute linear acceleration in inertia frame ----------- //
+    
+    float Rroll_1[3][3] = {
+      {1, 0, 0},
+      {0, cos(roll_est), (-1 * sin(roll_est))},
+      {0, sin(roll_est), cos(roll_est)},
+    };
+
+    float Rpitch_1[3][3] = {
+      {cos(pitch_est), 0, sin(pitch_est)},
+      {0, 1, 0},
+      {(-1 * sin(pitch_est)), 0, cos(pitch_est)},
+    };
+
+    float Ryaw_1[3][3] = {
+      {cos(yaw_est), (-1*sin(yaw_est)), 0},
+      {sin(yaw_est), cos(yaw_est), 0},
+      {0, 0, 1},
+    };
+
+    linear_acc_vect[0] = acc_vect[0];
+    linear_acc_vect[1] = acc_vect[1];
+    linear_acc_vect[2] = acc_vect[2];
+
+    vectOp.transform(linear_acc_vect, Rroll_1, linear_acc_vect);
+    vectOp.transform(linear_acc_vect, Rpitch_1, linear_acc_vect);
+    vectOp.transform(linear_acc_vect, Ryaw_1, linear_acc_vect);
+
+    axLin = linear_acc_vect[0]-gravity_acc_vect[0];
+    ayLin = linear_acc_vect[1]-gravity_acc_vect[1];
+    azLin = linear_acc_vect[2]-gravity_acc_vect[2];
+
+    linAccxKalmanFilter1D(axLin);
+    linAccyKalmanFilter1D(ayLin);
+    linAcczKalmanFilter1D(azLin);
+
+    // lin_acc_x_est = axLinFilter.filt(axLin);
+    // lin_acc_y_est = ayLinFilter.filt(ayLin);
+    // lin_acc_z_est = azLinFilter.filt(azLin);
+
+    //------------------------------------------------------------------------------//
+
 
     //---------------- GET BACK HEADINGS HEADING ----------------------------//
     heading_deg = degrees(yaw_est)+ref_yaw_deg;

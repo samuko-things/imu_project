@@ -18,10 +18,79 @@ float azOff = 0.00;
 float acc_vect[3];
 float acc_vect_norm[3];
 
+float linear_acc_vect[3];
+
+float axLin = 0.00;
+float ayLin = 0.00;
+float azLin = 0.00;
+
+// float lin_acc_x_est;
+// float lin_acc_y_est;
+// float lin_acc_z_est;
+
+float gravity_acc_vect[3] = {0.00, 0.00, 9.8};
+
+// adaptive lowpass Filter
+// int order = 2;
+// float cutOffFreq = 1.5;
+
+// // Filter instance
+// AdaptiveLowPassFilter axLinFilter(order, cutOffFreq);
+// AdaptiveLowPassFilter ayLinFilter(order, cutOffFreq);
+// AdaptiveLowPassFilter azLinFilter(order, cutOffFreq);
+
 float accx_variance = 0.00;
 float accy_variance = 0.00;
 float accz_variance = 0.00;
 ////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+float lin_acc_x_est = 0.0, lin_acc_x_uncertainty = 100.0;
+// float lin_acc_x_variance = 0.00144406228559;
+
+void linAccxKalmanFilter1D(float lin_acc_x_measurement){
+  //prediction
+  lin_acc_x_est = lin_acc_x_est;
+  lin_acc_x_uncertainty = lin_acc_x_uncertainty;
+
+  //correction
+  float kalman_gain = lin_acc_x_uncertainty/(lin_acc_x_uncertainty + accx_variance);
+  lin_acc_x_est = lin_acc_x_est + (kalman_gain * (lin_acc_x_measurement - lin_acc_x_est));
+  lin_acc_x_uncertainty = (1-kalman_gain) * lin_acc_x_uncertainty;
+}
+
+
+float lin_acc_y_est = 0.0, lin_acc_y_uncertainty = 100.0;
+// float lin_acc_y_variance = 0.00070666749879;
+
+void linAccyKalmanFilter1D(float lin_acc_y_measurement){
+  //prediction
+  lin_acc_y_est = lin_acc_y_est;
+  lin_acc_y_uncertainty = lin_acc_y_uncertainty;
+
+  //correction
+  float kalman_gain = lin_acc_y_uncertainty/(lin_acc_y_uncertainty + accy_variance);
+  lin_acc_y_est = lin_acc_y_est + (kalman_gain * (lin_acc_y_measurement - lin_acc_y_est));
+  lin_acc_y_uncertainty = (1-kalman_gain) * lin_acc_y_uncertainty;
+}
+
+
+float lin_acc_z_est = 0.0, lin_acc_z_uncertainty = 100.0;
+// float lin_acc_z_variance = 0.0054157543819900004;
+
+void linAcczKalmanFilter1D(float lin_acc_z_measurement){
+  //prediction
+  lin_acc_z_est = lin_acc_z_est;
+  lin_acc_z_uncertainty = lin_acc_z_uncertainty;
+
+  //correction
+  float kalman_gain = lin_acc_z_uncertainty/(lin_acc_z_uncertainty + accz_variance);
+  lin_acc_z_est = lin_acc_z_est + (kalman_gain * (lin_acc_z_measurement - lin_acc_z_est));
+  lin_acc_z_uncertainty = (1-kalman_gain) * lin_acc_z_uncertainty;
+}
+
+////////////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////

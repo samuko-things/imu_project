@@ -34,7 +34,7 @@ def euler_from_quaternion(x, y, z, w):
 
 portName = '/dev/ttyUSB0'
 imuSer = IMUSerialComm(portName, 115200, 0.1)
-for i in range(20):
+for i in range(5):
   t.sleep(1.0)
   print(i+1, " sec")
 
@@ -79,7 +79,7 @@ while True:
 
   # roll, pitch, yaw = euler_from_quaternion(qx, qy, qz, qw)
 
-  print(m.degrees(roll), m.degrees(pitch), m.degrees(yaw))
+  # print(m.degrees(roll), m.degrees(pitch), m.degrees(yaw))
 
   ##### perform axis computations #####################
   up=np.array([0,0,1]) # (x,y,z)

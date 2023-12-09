@@ -7,14 +7,19 @@ from imu_serial_comm_lib import IMUSerialComm
 
 
 def animate(i):
-    global imuSer, axes, rollDataList, pitchDataList, yawDataList, dataPoints
+    global imuSer, axes, rollDataList, pitchDataList, yawDataList, dataPoints, prev_time, new_time, vx, vy, vz
+    new_time = time.time()
+    dt = new_time-prev_time
 
-    # roll, pitch, yaw = imuSer.get('alin-raw')
-    roll, pitch, yaw = imuSer.get('rpy-est')
+    ax, ay, az = imuSer.get('alin-est')
+    vx = vx + (ax*dt)
+    vy = vy + (ay*dt)
+    vz = vz + (az*dt)
+    # roll, pitch, yaw = imuSer.get('rpy-est')
 
-    rollDataList.append(roll)
-    pitchDataList.append(pitch)
-    yawDataList.append(yaw)
+    rollDataList.append(vx)
+    pitchDataList.append(vy)
+    yawDataList.append(vz)
 
     # Fix the list size so that the animation plot 'window' is x number of points
     rollDataList = rollDataList[-dataPoints:]
@@ -30,7 +35,7 @@ def animate(i):
     axes.grid(which = "minor", linewidth = 0.2)
     axes.minorticks_on()
 
-    axes.set_ylim([-4,4]) # Set Y axis limit of plot
+    axes.set_ylim([-0.5,0.5]) # Set Y axis limit of plot
     axes.set_title("RPY Data") # Set title of figure
     axes.set_ylabel("angular pos (radians)") # Set title of y axis 
     axes.set_xlabel("number of data points") # Set title of z axis 
@@ -45,7 +50,7 @@ def animate(i):
 # portName = '/dev/ttyACM0'
 portName = '/dev/ttyUSB0'
 imuSer = IMUSerialComm(portName, 115200, 0.1)
-for i in range(30):
+for i in range(20):
   time.sleep(1.0)
   print(i+1, " sec")
 # time.sleep(30)
@@ -55,6 +60,13 @@ pitchDataList = []
 yawDataList = []
 
 dataPoints = 50
+
+prev_time = time.time()
+new_time = time.time()
+
+vx = 0.0
+vy = 0.0
+vz = 0.0
                                                         
 fig = plt.figure()  # Create Matplotlib plots fig is the 'higher level' plot window
 axes = fig.add_subplot(111) # Add subplot to main fig window

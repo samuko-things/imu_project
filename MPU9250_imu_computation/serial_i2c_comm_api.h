@@ -102,12 +102,21 @@ String sendQuternions_with_heading(){
   return data;
 }
 
-String sendAccelerations(){
-  String data = String(axCal, 8);
+String sendLinearAccelerationRaw(){
+  String data = String(axLin, 8);
   data += ",";
-  data += String(ayCal, 8);
+  data += String(ayLin, 8);
   data += ",";
-  data += String(azCal, 8);
+  data += String(azLin, 8);
+  return data;
+}
+
+String sendLinearAccelerationEst(){
+  String data = String(lin_acc_x_est, 8);
+  data += ",";
+  data += String(lin_acc_y_est, 8);
+  data += ",";
+  data += String(lin_acc_z_est, 8);
   return data;
 }
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -245,8 +254,14 @@ void serialReceiveAndSendData() {
         ser_msg = "";
       }
 
-      else if(serDataBuffer[0] == "acc-cal"){
-        ser_msg = sendAccelerations();
+      else if(serDataBuffer[0] == "alin-raw"){
+        ser_msg = sendLinearAccelerationRaw();
+        Serial.println(ser_msg);
+        ser_msg = "";
+      }
+
+      else if(serDataBuffer[0] == "alin-est"){
+        ser_msg = sendLinearAccelerationEst();
         Serial.println(ser_msg);
         ser_msg = "";
       }
