@@ -35,10 +35,10 @@ if __name__ == "__main__":
     pitch_rate_arr.append(p_rate)
     yaw_rate_arr.append(y_rate)
 
-    lin_accx, lin_accy, lin_accz = imuSer.get('acc-cal')
-    lin_accx_arr.append(lin_accx)
-    lin_accy_arr.append(lin_accy)
-    lin_accz_arr.append(lin_accz)
+    # lin_accx, lin_accy, lin_accz = imuSer.get('acc-cal')
+    # lin_accx_arr.append(lin_accx)
+    # lin_accy_arr.append(lin_accy)
+    # lin_accz_arr.append(lin_accz)
 
     percent = (i*100)/no_of_samples
     print("reading_sensor_data...  ", percent, " percent complete")
@@ -55,9 +55,9 @@ if __name__ == "__main__":
   yaw_rate_variance = np.var(yaw_rate_arr)
 
 
-  lin_accx_variance = np.var(lin_accx_arr)
-  lin_accy_variance = np.var(lin_accy_arr)
-  lin_accz_variance = np.var(lin_accz_arr)
+  # lin_accx_variance = np.var(lin_accx_arr)
+  # lin_accy_variance = np.var(lin_accy_arr)
+  # lin_accz_variance = np.var(lin_accz_arr)
 
 
 
@@ -83,14 +83,14 @@ if __name__ == "__main__":
   
 
 
-  imuSer.send('accx-var', lin_accx_variance)
-  lin_accx_variance = imuSer.get('accx-var')
+  # imuSer.send('accx-var', lin_accx_variance)
+  # lin_accx_variance = imuSer.get('accx-var')
 
-  imuSer.send('accy-var', lin_accy_variance)
-  lin_accy_variance = imuSer.get('accy-var')
+  # imuSer.send('accy-var', lin_accy_variance)
+  # lin_accy_variance = imuSer.get('accy-var')
 
-  imuSer.send('accz-var', lin_accz_variance)
-  lin_accz_variance = imuSer.get('accz-var')
+  # imuSer.send('accz-var', lin_accz_variance)
+  # lin_accz_variance = imuSer.get('accz-var')
 
   
 
@@ -106,8 +106,8 @@ if __name__ == "__main__":
   print('yaw_rate_variance =', yaw_rate_variance)
   print("")
 
-  print('lin_accx_variance =', lin_accx_variance)
-  print('lin_accy_variance =', lin_accy_variance)
-  print('lin_accz_variance =', lin_accz_variance)
+  # print('lin_accx_variance =', lin_accx_variance)
+  # print('lin_accy_variance =', lin_accy_variance)
+  # print('lin_accz_variance =', lin_accz_variance)
   
   print("")

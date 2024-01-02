@@ -34,7 +34,7 @@ def euler_from_quaternion(x, y, z, w):
 
 portName = '/dev/ttyUSB0'
 imuSer = IMUSerialComm(portName, 115200, 0.1)
-for i in range(6):
+for i in range(20):
   t.sleep(1.0)
   print(i+1, " sec")
 
@@ -70,16 +70,12 @@ myBox.opacity = 0.3
 myObj = compound([myBox])
 
 while True:
-  roll, pitch, yaw = imuSer.get('rpy-rad') #est without heading
-
-  # roll, pitch, yaw = imuSer.get('rpy-esth') #est with heading
+  # roll, pitch, yaw = imuSer.get('rpy-est') #est without heading
   
-  # qw, qx, qy, qz = imuSer.get('quat') #est without heading
-  # qw, qx, qy, qz = imuSer.get('quath') #est with heading
+  qw, qx, qy, qz = imuSer.get('quat') #est without heading
+  roll, pitch, yaw = euler_from_quaternion(qx, qy, qz, qw)
 
-  # roll, pitch, yaw = euler_from_quaternion(qx, qy, qz, qw)
-
-  print(m.degrees(roll), m.degrees(pitch), m.degrees(yaw))
+  # print(m.degrees(roll), m.degrees(pitch), m.degrees(yaw))
 
   ##### perform axis computations #####################
   up=np.array([0,0,1]) # (x,y,z)

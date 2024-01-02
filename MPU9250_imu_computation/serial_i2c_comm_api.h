@@ -33,74 +33,72 @@ void offLed(){
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-String sendRPY_rad(){
-  String data = String(roll, 4);
+String sendLinearAcc(){
+  String data = String(linear_acc_vect[0], 8);
   data += ",";
-  data += String(pitch, 4);
+  data += String(linear_acc_vect[1], 8);
   data += ",";
-  data += String(yaw, 4);
+  data += String(linear_acc_vect[2], 8);
   return data;
 }
 
 String sendRPY_rate(){
-  String data = String(roll_rate, 4);
+  String data = String(roll_rate, 8);
   data += ",";
-  data += String(pitch_rate, 4);
+  data += String(pitch_rate, 8);
   data += ",";
-  data += String(yaw_rate, 4);
+  data += String(yaw_rate, 8);
   return data;
 }
 
 
 String sendRPY_est(){
-  String data = String(roll_est, 4);
+  String data = String(roll_est, 8);
   data += ",";
-  data += String(pitch_est, 4);
+  data += String(pitch_est, 8);
   data += ",";
-  data += String(yaw_est, 4);
+  data += String(yaw_est, 8);
   return data;
 }
 
 
-String sendRPY_est_with_heading(){
-  String data = String(roll_est, 4);
-  data += ",";
-  data += String(pitch_est, 4);
-  data += ",";
-  data += String(heading, 4);
-  return data;
-}
+// String sendRPY_est_with_heading(){
+//   String data = String(roll_est, 4);
+//   data += ",";
+//   data += String(pitch_est, 4);
+//   data += ",";
+//   data += String(heading_est, 4);
+//   return data;
+// }
 
 String send_heading(){
-  String data = String(heading, 4);
-  data += ",";
-  data += String(heading_deg, 2);
+  String data = String(heading_est, 8);
   return data;
 }
 
 
 String sendQuternions(){
-  String data = String(qw, 4);
+  String data = String(qw_est, 8);
   data += ",";
-  data += String(qx, 4);
+  data += String(qx_est, 8);
   data += ",";
-  data += String(qy, 4);
+  data += String(qy_est, 8);
   data += ",";
-  data += String(qz, 4);
+  data += String(qz_est, 8);
   return data;
 }
 
 
-String sendQuternions_with_heading(){
-  String data = String(qwh, 4);
-  data += ",";
-  data += String(qxh, 4);
-  data += ",";
-  data += String(qyh, 4);
-  data += ",";
-  data += String(qzh, 4);
-  return data;
-}
+// String sendQuternions_with_heading(){
+//   String data = String(qwh_est, 4);
+//   data += ",";
+//   data += String(qxh_est, 4);
+//   data += ",";
+//   data += String(qyh_est, 4);
+//   data += ",";
+//   data += String(qzh_est, 4);
+//   return data;
+// }
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -194,8 +192,8 @@ void serialReceiveAndSendData() {
 
       /////////////// FUNCTION CALLS /////////////////////
 
-      if(serDataBuffer[0] == "rpy-rad"){
-        ser_msg = sendRPY_rad();
+      if(serDataBuffer[0] == "acc-lin"){
+        ser_msg = sendLinearAcc();
         Serial.println(ser_msg);
         ser_msg = "";
       }
@@ -212,11 +210,11 @@ void serialReceiveAndSendData() {
         ser_msg = "";
       }
 
-      else if(serDataBuffer[0] == "rpy-esth"){
-        ser_msg = sendRPY_est_with_heading();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
+      // else if(serDataBuffer[0] == "rpy-esth"){
+      //   ser_msg = sendRPY_est_with_heading();
+      //   Serial.println(ser_msg);
+      //   ser_msg = "";
+      // }
 
       else if(serDataBuffer[0] == "heading"){
         ser_msg = send_heading();
@@ -230,11 +228,11 @@ void serialReceiveAndSendData() {
         ser_msg = "";
       }
 
-      else if(serDataBuffer[0] == "quath"){
-        ser_msg = sendQuternions_with_heading();
-        Serial.println(ser_msg);
-        ser_msg = "";
-      }
+      // else if(serDataBuffer[0] == "quath"){
+      //   ser_msg = sendQuternions_with_heading();
+      //   Serial.println(ser_msg);
+      //   ser_msg = "";
+      // }
 
       else if (serDataBuffer[0] == "rAng-var") {
         ser_msg = sendRollAngleVariance();

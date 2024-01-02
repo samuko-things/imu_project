@@ -89,7 +89,7 @@ void setup()
   delay(1000);
   offLed();
 
-  ref_yaw_deg = 0.00;
+  ref_yaw = 0.00;
 
   serialCommTime = millis();
   readImuTime = millis();
@@ -188,29 +188,180 @@ void loop()
       // generate DCM
       float DCM[3][3];
 
-      DCM[0][0] = vectOp.cosineOfAngleBtw<float>(N, n);
-      DCM[0][1] = vectOp.cosineOfAngleBtw<float>(W, n);
-      DCM[0][2] = vectOp.cosineOfAngleBtw<float>(U, n);
+      DCM[0][0] = n[0];
+      DCM[0][1] = w[0];
+      DCM[0][2] = u[0];
 
-      DCM[1][0] = vectOp.cosineOfAngleBtw<float>(N, w);
-      DCM[1][1] = vectOp.cosineOfAngleBtw<float>(W, w);
-      DCM[1][2] = vectOp.cosineOfAngleBtw<float>(U, w);
+      DCM[1][0] = n[1];
+      DCM[1][1] = w[1];
+      DCM[1][2] = u[1];
 
-      DCM[2][0] = vectOp.cosineOfAngleBtw<float>(N, u);
-      DCM[2][1] = vectOp.cosineOfAngleBtw<float>(W, u);
-      DCM[2][2] = vectOp.cosineOfAngleBtw<float>(U, u);
-
-      // matOp.print(DCM);
-      // Serial.println();
+      DCM[2][0] = n[2];
+      DCM[2][1] = w[2];
+      DCM[2][2] = u[2];
 
       //-----------------------------------------------------//
 
-      //------ CALC RPY from DCM -----------------------//
-      roll = -1.00 * atan2(DCM[1][2], DCM[2][2]);
-      pitch = asin(DCM[0][2]);
-      yaw = -1.00 * atan2(DCM[0][1], DCM[0][0]);
 
-      readImuTime = millis();
+      //------ CALC QUAT from DCM -----------------------//
+      float q0_root = sqrt(1+DCM[0][0]+DCM[1][1]+DCM[2][2]);
+      float q1_root = sqrt(1+DCM[0][0]-DCM[1][1]-DCM[2][2]);
+      float q2_root = sqrt(1-DCM[0][0]+DCM[1][1]-DCM[2][2]);
+      float q3_root = sqrt(1-DCM[0][0]-DCM[1][1]+DCM[2][2]);
+
+      if ((DCM[1][1]>-DCM[2][2]) && (DCM[0][0]>-DCM[1][1]) && (DCM[0][0]>-DCM[2][2])){
+        qw = 0.5 * q0_root;
+        qx = 0.5 * (DCM[1][2]-DCM[2][1])/q0_root;
+        qy = 0.5 * (DCM[2][0]-DCM[0][2])/q0_root;
+        qz = 0.5 * (DCM[0][1]-DCM[1][0])/q0_root;
+      }
+      else if ((DCM[1][1]<-DCM[2][2]) && (DCM[0][0]>DCM[1][1]) && (DCM[0][0]>DCM[2][2])){
+        qw = 0.5 * (DCM[1][2]-DCM[2][1])/q1_root;;
+        qx = 0.5 * q1_root;
+        qy = 0.5 * (DCM[0][1]+DCM[1][0])/q1_root;
+        qz = 0.5 * (DCM[2][0]+DCM[0][2])/q1_root;
+      }
+      else if ((DCM[1][1]>DCM[2][2]) && (DCM[0][0]<DCM[1][1]) && (DCM[0][0]<-DCM[2][2])){
+        qw = 0.5 * (DCM[2][0]-DCM[0][2])/q2_root;
+        qx = 0.5 * (DCM[0][1]+DCM[1][0])/q2_root;
+        qy = 0.5 * q2_root;
+        qz = 0.5 * (DCM[1][2]+DCM[2][1])/q2_root;
+      }
+      else if ((DCM[1][1]<DCM[2][2]) && (DCM[0][0]<-DCM[1][1]) && (DCM[0][0]<DCM[2][2])){
+        qw = 0.5 * (DCM[0][1]-DCM[1][0])/q3_root;
+        qx = 0.5 * (DCM[2][0]+DCM[0][2])/q3_root;
+        qy = 0.5 * (DCM[1][2]+DCM[2][1])/q3_root;
+        qz = 0.5 * q3_root;
+      }
+      //-------------------------------------------------//
+
+
+      //------ CALC RPY from QUAT -----------------------//
+      float t0 = 2.0 * (qw * qx + qy * qz);
+      float t1 = 1.0 - 2.0 * (qx * qx + qy * qy);
+      roll = atan2(t0, t1);
+
+      float t2 = 2.0 * (qw * qy - qz * qx);
+      if(t2 > 1.0){
+        t2 = 1.0;
+      }
+      else if (t2 < -1.0){
+        t2 = -1.0;
+      }
+      pitch = asin(t2);
+
+      float t3 = 2.0 * (qw * qz + qx * qy);
+      float t4 = 1.0 - 2.0 * (qy * qy + qz * qz);
+      yaw = atan2(t3, t4);
+      //----------------------------------------------------//
+
+
+      if(count >= 200){
+        
+
+        //--------- GET RPY RATE----------------------//
+        roll_rate = gxCal;
+        pitch_rate = gyCal;
+        yaw_rate = gzCal;
+        //--------------------------------------------//
+
+        //---------------- ADD ZERO REFEFENCE ANGLE FOR YAW ----------------------------//
+
+        if (startYawRefAngle){
+          ref_yaw = yaw;
+          startYawRefAngle = false;
+        }
+
+        if ((ref_yaw >= 0.0) && ((radians(-180.0)+ref_yaw)>=yaw)&&(yaw>=-180.0)){
+          new_yaw = radians(360.0) + yaw - ref_yaw;
+        }
+        else if ((ref_yaw < 0.0) && (radians(180.0)>=yaw)&&(yaw>=(radians(180.0)+ref_yaw))){
+          new_yaw = radians(-360.0) + yaw - ref_yaw;
+        }
+        else {
+          new_yaw = yaw - ref_yaw;
+        }
+
+        //------------------------------------------------------------------------------//
+
+
+
+        //-------- APPLY 1D KALMAN FILTER TO ROLL, PITCH AND YAW ------------//
+        rollKalmanFilter(roll_rate, roll);
+        pitchKalmanFilter(pitch_rate, pitch);
+        yawKalmanFilter(yaw_rate, new_yaw);
+        //--------------------------------------------------------------------//
+
+
+        //------- CONVERT FILTERED RPY TO QUATERNIONS WITH ZERO REFERENCE YAW-----------------------//
+        qx_est = ( sin(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
+        qy_est = ( cos(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) );
+        qz_est = ( cos(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) ) - ( sin(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) );
+        qw_est = ( cos(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
+        // -------------------------------------------------------------------//
+        
+
+
+        //---------------- GET BACK HEADINGS HEADING ----------------------------//
+        heading_est = yaw_est+ref_yaw;
+
+        if ((ref_yaw >= 0.0) && (heading_est>radians(180))){
+          heading_est = heading_est - radians(360.0);
+        }
+        else if ((ref_yaw < 0.0) && (heading_est<radians(-180))){
+          heading_est = heading_est + radians(360.0);
+        }
+        else {
+          heading_est = heading_est;
+        }
+        //------------------------------------------------------------------------------//
+
+
+        // //------- CONVERT FILTERED RPY TO QUATERNIONS WITH YAW HEADING-----------------------//
+        // qxh_est = ( sin(roll_est/2) * cos(pitch_est/2) * cos(heading_est/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(heading_est/2) );
+        // qyh_est = ( cos(roll_est/2) * sin(pitch_est/2) * cos(heading_est/2) ) + ( sin(roll_est/2) * cos(pitch_est/2) * sin(heading_est/2) );
+        // qzh_est = ( cos(roll_est/2) * cos(pitch_est/2) * sin(heading_est/2) ) - ( sin(roll_est/2) * sin(pitch_est/2) * cos(heading_est/2) );
+        // qwh_est = ( cos(roll_est/2) * cos(pitch_est/2) * cos(heading_est/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(heading_est/2) );
+        // // -------------------------------------------------------------------//
+
+
+        //---------- compute linear acceleration in inertia frame ----------- //
+    
+        float Rroll_1[3][3] = {
+          {1, 0, 0},
+          {0, cos(roll_est), (-1 * sin(roll_est))},
+          {0, sin(roll_est), cos(roll_est)},
+        };
+
+        float Rpitch_1[3][3] = {
+          {cos(pitch_est), 0, sin(pitch_est)},
+          {0, 1, 0},
+          {(-1 * sin(pitch_est)), 0, cos(pitch_est)},
+        };
+
+        float Ryaw_1[3][3] = {
+          {cos(yaw_est), (-1*sin(yaw_est)), 0},
+          {sin(yaw_est), cos(yaw_est), 0},
+          {0, 0, 1},
+        };
+
+        linear_acc_vect[0] = acc_vect[0];
+        linear_acc_vect[1] = acc_vect[1];
+        linear_acc_vect[2] = acc_vect[2];
+
+        vectOp.transform(linear_acc_vect, Rroll_1, linear_acc_vect);
+        vectOp.transform(linear_acc_vect, Rpitch_1, linear_acc_vect);
+        vectOp.transform(linear_acc_vect, Ryaw_1, linear_acc_vect);
+        //--------------------------------------------------------------------------//
+        
+      }
+
+        
     }
+    else count += 1;
+
+      
+
+    readImuTime = millis(); 
   }
 }

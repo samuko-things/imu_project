@@ -18,6 +18,8 @@ float azOff = 0.00;
 float acc_vect[3];
 float acc_vect_norm[3];
 
+float linear_acc_vect[3];
+
 float accx_variance = 0.00;
 float accy_variance = 0.00;
 float accz_variance = 0.00;
@@ -62,22 +64,53 @@ float mag_vect_norm[3];
 
 //////////////////////////////////////////////////////////////////////
 float roll, pitch, yaw;
-float roll_deg, pitch_deg, yaw_deg;
 float roll_rate, pitch_rate, yaw_rate;
-
-// inertia NWU frame
-float N[3] = {1.0, 0.0, 0.0};
-float W[3] = {0.0, 1.0, 0.0};
-float U[3] = {0.0, 0.0, 1.0};
 
 // sensor body NWU frame
 float n[3], w[3], u[3];
-
-float new_yaw_deg=0.00, ref_yaw_deg=0.00;
-bool startYawRefAngle = true;
-int count;
-float heading=0.00, heading_deg=0.00;
 //////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////
+float ref_yaw=0.00;
+bool startYawRefAngle = true;
+int count=0;
+float heading_est=0.00;
+
+float yaw_inc=0.0, prev_yaw=0.0, new_yaw=0.0;
+bool set_yaw_inc=false, start_yaw_inc=false;
+
+// void increment_yaw() {
+//   new_yaw = yaw;
+//   if ((new_yaw - prev_yaw) > radians(180.0)) {
+//     yaw_inc -= ((new_yaw - prev_yaw) - radians(360.0));
+//   }
+//   else if ((new_yaw - prev_yaw) < (-1 * radians(180.0))) {
+//     yaw_inc -= ((new_yaw - prev_yaw) + radians(360.0));
+//   }
+//   else {
+//     yaw_inc += (new_yaw - prev_yaw);
+//   }
+//   prev_yaw = new_yaw;
+// }
+
+
+// void compute_yaw_inc() {
+//   if (!set_yaw_inc) {
+//     yaw_inc = 0.00;
+//     set_yaw_inc = true;
+//   }
+
+//   if (!start_yaw_inc) {
+//     prev_yaw = yaw;
+//     start_yaw_inc = true;
+//   }
+
+//   increment_yaw();
+// }
+/////////////////////////////////////////////////////////////////////
+
+
 
 
 
@@ -234,8 +267,20 @@ void yawKalmanFilter(float yaw_rate_measurement, float yaw_angle_measurement){
 
 
 ////////////////////////////////////////////////////////////////////////////
-float qw=0.00, qx=0.00, qy=0.00, qz=0.00;
-float qwh=0.00, qxh=0.00, qyh=0.00, qzh=0.00;
+float qw=0.00;
+float qx=0.00;
+float qy=0.00;
+float qz=0.00;
+
+float qw_est=0.00;
+float qx_est=0.00;
+float qy_est=0.00;
+float qz_est=0.00;
+
+float qwh_est=0.00;
+float qxh_est=0.00;
+float qyh_est=0.00;
+float qzh_est=0.00;
 ////////////////////////////////////////////////////////////////////////////
 
 
