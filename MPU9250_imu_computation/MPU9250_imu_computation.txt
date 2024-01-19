@@ -20,6 +20,9 @@
 /* Mpu9250 object, SPI bus, CS on pin 10 */
 bfs::Mpu9250 imu(&SPI, 10);
 
+// /* Mpu9250 object for I2C */
+// bfs::Mpu9250 imu;
+
 unsigned long serialCommTime, serialCommSampleTime = 10; // ms -> (1000/sampleTime) hz
 unsigned long readImuTime, readImuSampleTime = 2;        // ms -> (1000/sampleTime) hz
 
@@ -41,6 +44,14 @@ void setup()
   SPI.begin();
   //----------------------------------------------------------------//
 
+  //---------------- START IMU IN I2C MODE -----------------------//
+  // /* Start the I2C bus */
+  // Wire.begin();
+  // Wire.setClock(400000);
+  // /* I2C bus,  0x68 address */
+  // imu.Config(&Wire, bfs::Mpu9250::I2C_ADDR_PRIM);
+  //----------------------------------------------------------------//
+
   //---------------- INITIALIZE IMU -----------------------//
   /* Initialize and configure IMU */
   if (!imu.Begin())
@@ -49,6 +60,10 @@ void setup()
 
     while (1)
     {
+      // delay(100);
+      // onLed();
+      // delay(100);
+      // offLed();
     }
   }
 
@@ -58,6 +73,10 @@ void setup()
     // Serial.println("Error configured SRD");
     while (1)
     {
+      // delay(100);
+      // onLed();
+      // delay(100);
+      // offLed();
     }
   }
   //----------------------------------------------------------------//
@@ -276,7 +295,16 @@ void loop()
         pitchKalmanFilter(pitch_rate, pitch);
         yawKalmanFilter(yaw_rate, new_yaw);
         //--------------------------------------------------------------------//
+
+
+        //------- CONVERT FILTERED RPY TO QUATERNIONS WITH ZERO REFERENCE YAW-----------------------//
+        qx_est = ( sin(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
+        qy_est = ( cos(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) );
+        qz_est = ( cos(roll_est/2) * cos(pitch_est/2) * sin(yaw_est/2) ) - ( sin(roll_est/2) * sin(pitch_est/2) * cos(yaw_est/2) );
+        qw_est = ( cos(roll_est/2) * cos(pitch_est/2) * cos(yaw_est/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(yaw_est/2) );
+        // -------------------------------------------------------------------//
         
+
 
         //---------------- GET BACK HEADINGS HEADING ----------------------------//
         heading_est = yaw_est+ref_yaw;
@@ -291,6 +319,45 @@ void loop()
           heading_est = heading_est;
         }
         //------------------------------------------------------------------------------//
+
+
+        // //------- CONVERT FILTERED RPY TO QUATERNIONS WITH YAW HEADING-----------------------//
+        // qxh_est = ( sin(roll_est/2) * cos(pitch_est/2) * cos(heading_est/2) ) - ( cos(roll_est/2) * sin(pitch_est/2) * sin(heading_est/2) );
+        // qyh_est = ( cos(roll_est/2) * sin(pitch_est/2) * cos(heading_est/2) ) + ( sin(roll_est/2) * cos(pitch_est/2) * sin(heading_est/2) );
+        // qzh_est = ( cos(roll_est/2) * cos(pitch_est/2) * sin(heading_est/2) ) - ( sin(roll_est/2) * sin(pitch_est/2) * cos(heading_est/2) );
+        // qwh_est = ( cos(roll_est/2) * cos(pitch_est/2) * cos(heading_est/2) ) + ( sin(roll_est/2) * sin(pitch_est/2) * sin(heading_est/2) );
+        // // -------------------------------------------------------------------//
+
+
+        //---------- compute linear acceleration in inertia frame ----------- //
+    
+        float Rroll_1[3][3] = {
+          {1, 0, 0},
+          {0, cos(roll_est), (-1 * sin(roll_est))},
+          {0, sin(roll_est), cos(roll_est)},
+        };
+
+        float Rpitch_1[3][3] = {
+          {cos(pitch_est), 0, sin(pitch_est)},
+          {0, 1, 0},
+          {(-1 * sin(pitch_est)), 0, cos(pitch_est)},
+        };
+
+        float Ryaw_1[3][3] = {
+          {cos(yaw_est), (-1*sin(yaw_est)), 0},
+          {sin(yaw_est), cos(yaw_est), 0},
+          {0, 0, 1},
+        };
+
+        linear_acc_vect[0] = acc_vect[0];
+        linear_acc_vect[1] = acc_vect[1];
+        linear_acc_vect[2] = acc_vect[2];
+
+        vectOp.transform(linear_acc_vect, Rroll_1, linear_acc_vect);
+        vectOp.transform(linear_acc_vect, Rpitch_1, linear_acc_vect);
+        vectOp.transform(linear_acc_vect, Ryaw_1, linear_acc_vect);
+        //--------------------------------------------------------------------------//
+        
       }
       else count += 1;
         
